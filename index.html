@@ -335,7 +335,7 @@
 
             var textStatus = (item.status === 'Revision') ? 'En revisión' : (item.status === 'Proceso') ? 'En proceso' : (item.status === 'Terminado') ? 'Terminado' : item.status;
             var msg = "Hola " + item.owner + ", Taller Legado. Tu " + item.brand + " [" + item.plates + "] esta en estado: *" + textStatus + "*.";
-            var whatsUrl = "https://wa.me" + item.phone + "?text=" + encodeURIComponent(msg);
+            var whatsUrl = "https://wa.me/" + item.phone + "?text=" + encodeURIComponent(msg);
             
             var actionBtn = isDelivered ? '<b>Concluido</b>' : '<button class="deliver-btn" onclick="deliverVehicle(' + item.id + ')">Entregar</button>';
             var editBtnHtml = isDelivered ? '' : '<button class="deliver-btn" style="background-color:#0284c7;" onclick="editOrder(' + item.id + ')">✏️ Editar</button>';
@@ -467,7 +467,7 @@
     function resendQuoteWhatsApp(id) {
         var quotes = getLocalData("legadoQuotesFinalV28"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return;
         var msgQuote = "Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n¼ *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2);
-        window.open("https://wa.me" + q.phone + "?text=" + encodeURIComponent(msgQuote), '_blank');
+        window.open("https://wa.me/" + q.phone + "?text=" + encodeURIComponent(msgQuote), '_blank');
     }
     function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { var filtered = getLocalData("legadoQuotesFinalV28").filter(function(q) { return q.id !== id; }); localStorage.setItem("legadoQuotesFinalV28", JSON.stringify(filtered)); displayQuotes(); syncToCloud(); } }
     function getLocalData(key) { try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : []; } catch(e) { return []; } }
