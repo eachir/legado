@@ -14,7 +14,7 @@
         h1 { text-align: center; color: #38bdf8; margin-top: 0; text-transform: uppercase; }
         h2 { color: #e2e8f0; border-bottom: 2px solid #334155; padding-bottom: 8px; }
         
-        /* Panel de Conexión en la Nube */
+        /* Panel Nube */
         .cloud-panel { background: #0f172a; padding: 15px; border-radius: 8px; border-left: 5px solid #38bdf8; margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
         .cloud-panel input { width: 100%; background: #1e293b; padding: 8px; border: 1px solid #475569; border-radius: 4px; color: #38bdf8; font-size: 13px; font-family: monospace; }
         
@@ -81,7 +81,7 @@
     
     <div class="cloud-panel">
         <label style="color: #38bdf8; font-weight: bold;">🌐 Sincronización Multiplataforma (Google Sheets URL):</label>
-        <input type="text" id="cloudUrlInput" placeholder="Pega aquí tu URL de Apps Script que termina en /exec..." onchange="saveCloudUrl()">
+        <input type="text" id="cloudUrlInput" placeholder="Pega tu enlace de Google Apps Script que termina en /exec..." onchange="saveCloudUrl()">
     </div>
 
     <div class="main-nav">
@@ -152,7 +152,7 @@
             </div>
             <button type="button" class="btn-primary" id="btnSaveQuote" style="background-color: #10b981; color: white;" onclick="saveQuote()">Guardar y Enviar Presupuesto</button>
         </form>
-                <!-- BLOQUE 4 -->
+        <!-- BLOQUE 4 -->
         <h2>Historial de Cotizaciones Generadas</h2>
         <div style="background: #0f172a; padding: 10px; text-align: right;">
             <button type="button" class="btn-excel" onclick="exportQuotesToExcel()">📊 Exportar Cotizaciones a Excel</button>
@@ -172,7 +172,6 @@
 <div id="imageModal" class="img-modal" onclick="this.style.display='none'"><img id="modalImgSrc" src=""></div>
 <!-- Selector de fotos invisible -->
 <input type="file" id="hiddenFileInput" accept="image/*" style="display:none;" onchange="handleFileSelected(this)">
-
 <!-- BLOQUE 5 -->
 <script>
     var currentView = 'activos';
@@ -219,17 +218,17 @@
         fetch(cloudUrl + "?action=read")
         .then(function(res) { return res.json(); })
         .then(function(cloudData) {
-            if (cloudData.orders) localStorage.setItem("legadoStorageFinalV28", JSON.stringify(cloudData.orders));
-            if (cloudData.quotes) localStorage.setItem("legadoQuotesFinalV28", JSON.stringify(cloudData.quotes));
+            if (cloudData.orders) localStorage.setItem("legadoStorageFinalV30", JSON.stringify(cloudData.orders));
+            if (cloudData.quotes) localStorage.setItem("legadoQuotesFinalV30", JSON.stringify(cloudData.quotes));
             displayOrders(); displayQuotes(); updateVehicleDropdown();
         })
-        .catch(function(err) { console.log("Trabajando en modo fuera de línea."); });
+        .catch(function(err) { console.log("Trabajando en modo local fuera de línea."); });
     }
 
     function syncToCloud() {
         if (!cloudUrl) return;
-        var orders = getLocalData("legadoStorageFinalV28");
-        var quotes = getLocalData("legadoQuotesFinalV28");
+        var orders = getLocalData("legadoStorageFinalV30");
+        var quotes = getLocalData("legadoQuotesFinalV30");
         
         fetch(cloudUrl, {
             method: "POST",
@@ -244,7 +243,7 @@
     function searchExistingVehicle() {
         var inputPlates = document.getElementById("plates").value.trim().toUpperCase();
         if (inputPlates === "") return;
-        var list = getLocalData("legadoStorageFinalV28");
+        var list = getLocalData("legadoStorageFinalV30");
         if (list.length === 0) return;
         var car = null;
         for (var i = list.length - 1; i >= 0; i--) {
@@ -278,7 +277,7 @@
         var cleanPhone = ph.replace(/[^0-9]/g, '');
         if (cleanPhone.length === 10 && !cleanPhone.startsWith("52")) { cleanPhone = "52" + cleanPhone; }
 
-        var list = getLocalData("legadoStorageFinalV28");
+        var list = getLocalData("legadoStorageFinalV30");
         if (editingOrderId !== null) {
             for (var i = 0; i < list.length; i++) {
                 if (list[i].id === editingOrderId) {
@@ -291,12 +290,12 @@
         } else {
             list.push({ id: Date.now(), plates: p, brand: b, model: m, year: y, color: c, km: k, vin: v, owner: o, phone: cleanPhone, fault: f, status: s });
         }
-        localStorage.setItem("legadoStorageFinalV28", JSON.stringify(list));
+        localStorage.setItem("legadoStorageFinalV30", JSON.stringify(list));
         document.getElementById("orderForm").reset(); displayOrders(); updateVehicleDropdown(); syncToCloud();
     }
 
     function editOrder(id) {
-        var list = getLocalData("legadoStorageFinalV28"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
+        var list = getLocalData("legadoStorageFinalV30"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
         document.getElementById("plates").value = car.plates; document.getElementById("brand").value = car.brand;
         document.getElementById("model").value = car.model; document.getElementById("year").value = car.year;
         document.getElementById("color").value = car.color; document.getElementById("km").value = car.km;
@@ -308,18 +307,66 @@
 
     function deleteOrder(id) {
         if(confirm("¿Seguro de ELIMINAR permanentemente esta orden de servicio?")) {
-            var filtered = getLocalData("legadoStorageFinalV28").filter(function(x) { return x.id !== id; });
-            localStorage.setItem("legadoStorageFinalV28", JSON.stringify(filtered)); displayOrders(); updateVehicleDropdown(); syncToCloud();
+            var filtered = getLocalData("legadoStorageFinalV30").filter(function(x) { return x.id !== id; });
+            localStorage.setItem("legadoStorageFinalV30", JSON.stringify(filtered)); displayOrders(); updateVehicleDropdown(); syncToCloud();
         }
     }
 </script>
 <!-- BLOQUE 8 -->
 <script>
+    function displayOrders() {
+        var tbody = document.getElementById("ordersTableBody"); if(!tbody) return; tbody.innerHTML = "";
+        var list = getLocalData("legadoStorageFinalV30");
+        var filteredList = list.filter(function(item) {
+            if (currentView === 'activos') return item.status !== 'Entregado';
+            return item.status === 'Entregado';
+        });
+        if (filteredList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No hay registros.</td></tr>'; return;
+        }
+        for (var i = 0; i < filteredList.length; i++) {
+            var item = filteredList[i]; var tr = document.createElement("tr");
+            var isDelivered = (item.status === 'Entregado'); if (isDelivered) tr.className = "row-blocked";
+            
+            var selectHtml = '<select class="table-select sel-' + item.status + '" onchange="updateStatus(' + item.id + ', this.value)"' + (isDelivered ? ' disabled' : '') + '>';
+            if (isDelivered) { selectHtml += '<option value="Entregado" selected>🔘 Entregado</option>'; } 
+            else { selectHtml += '<option value="Revision"' + (item.status === 'Revision' ? ' selected' : '') + '>🔴 En revisión</option><option value="Proceso"' + (item.status === 'Proceso' ? ' selected' : '') + '>🟡 En proceso</option><option value="Terminado"' + (item.status === 'Terminado' ? ' selected' : '') + '>🟢 Terminado</option>'; }
+            selectHtml += '</select>';
+
+            var textStatus = (item.status === 'Revision') ? 'En revisión' : (item.status === 'Proceso') ? 'En proceso' : (item.status === 'Terminado') ? 'Terminado' : item.status;
+            var msg = "Hola " + item.owner + ", Taller Legado. Tu " + item.brand + " [" + item.plates + "] esta en estado: *" + textStatus + "*.";
+            
+            // LA BARRA DIAGONAL ENLACE WA SE MANTIENE AQUÍ CORRECTAMENTE
+            var whatsUrl = "https://wa.me" + item.phone + "?text=" + encodeURIComponent(msg);
+            var actionBtn = isDelivered ? '<b>Concluido</b>' : '<button class="deliver-btn" onclick="deliverVehicle(' + item.id + ')">Entregar</button>';
+            var editBtnHtml = isDelivered ? '' : '<button class="deliver-btn" style="background-color:#0284c7;" onclick="editOrder(' + item.id + ')">✏️ Editar</button>';
+            var deleteBtnHtml = '<button class="deliver-btn" style="background:#ef4444;" onclick="deleteOrder(' + item.id + ')">Eliminar</button>';
+
+            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="' + whatsUrl + '" target="_blank" class="whats-link">Enviar WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="printRecord()">Imprimir</button></td>';
+            tbody.appendChild(tr);
+        }
+    }
+    function updateStatus(id, newStatus) {
+        var list = getLocalData("legadoStorageFinalV30");
+        for (var i = 0; i < list.length; i++) { if (list[i].id === id) { list[i].status = newStatus; break; } }
+        localStorage.setItem("legadoStorageFinalV30", JSON.stringify(list)); displayOrders(); syncToCloud();
+    }
+    function deliverVehicle(id) {
+        if(confirm("¿Mover este auto al historial de entregados? La línea se congelará.")) {
+            var list = getLocalData("legadoStorageFinalV30");
+            for (var i = 0; i < list.length; i++) { if (list[i].id === id) { list[i].status = 'Entregado'; break; } }
+            localStorage.setItem("legadoStorageFinalV30", JSON.stringify(list)); displayOrders(); updateVehicleDropdown(); syncToCloud();
+        }
+    }
+</script>
+<!-- BLOQUE 9 -->
+<script>
     var editingQuoteId = null;
 
+    // Sincroniza placas activas en el selector desplegable
     function updateVehicleDropdown() {
         var select = document.getElementById("quoteSelectVehicle"); if(!select) return; select.innerHTML = '<option value="">-- Elige las placas --</option>';
-        var list = getLocalData("legadoStorageFinalV28").filter(function(car) { return car.status !== 'Entregado'; });
+        var list = getLocalData("legadoStorageFinalV30").filter(function(car) { return car.status !== 'Entregado'; });
         list.forEach(function(car) {
             var opt = document.createElement("option"); opt.value = car.id; opt.textContent = car.plates + " - " + car.brand + " " + car.model; select.appendChild(opt);
         });
@@ -327,7 +374,7 @@
     function autoFillQuoteData() {
         var carId = document.getElementById("quoteSelectVehicle").value;
         if (!carId) { document.getElementById("quoteOwner").value = ""; document.getElementById("quoteVehicle").value = ""; return; }
-        var list = getLocalData("legadoStorageFinalV28");
+        var list = getLocalData("legadoStorageFinalV30");
         for(var i=0; i<list.length; i++) {
             if(list[i].id == carId) { document.getElementById("quoteOwner").value = list[i].owner; document.getElementById("quoteVehicle").value = list[i].brand + " " + list[i].model; break; }
         }
@@ -345,10 +392,10 @@
         var service = document.getElementById("quoteService").value.trim().toUpperCase();
         var parts = parseFloat(document.getElementById("costParts").value) || 0;
         var labor = parseFloat(document.getElementById("costLabor").value) || 0;
-        if (!carId || !service) { alert("Por favor completa los datos requeridos."); return; }
-        var carList = getLocalData("legadoStorageFinalV28"); var matchedCar = carList.find(function(car) { return car.id == carId; });
+        if (!carId || !service) { alert("Por favor completa los datos."); return; }
+        var carList = getLocalData("legadoStorageFinalV30"); var matchedCar = carList.find(function(car) { return car.id == carId; });
         var subtotal = parts + labor; var iva = subtotal * 0.16; var total = subtotal + iva;
-        var quotesList = getLocalData("legadoQuotesFinalV29");
+        var quotesList = getLocalData("legadoQuotesFinalV30");
 
         if (editingQuoteId !== null) {
             for (var i = 0; i < quotesList.length; i++) {
@@ -362,13 +409,14 @@
             var newQuote = { id: Date.now(), plates: matchedCar.plates, owner: matchedCar.owner, phone: matchedCar.phone, vehicle: matchedCar.brand + " " + matchedCar.model, service: service, subtotal: subtotal, iva: iva, total: total, imageEvidence: "", quoteStatus: "Pendiente" };
             quotesList.push(newQuote); var activeIdToSend = newQuote.id;
         }
-        localStorage.setItem("legadoQuotesFinalV29", JSON.stringify(quotesList));
+        localStorage.setItem("legadoQuotesFinalV30", JSON.stringify(quotesList));
         document.getElementById("quoteForm").reset();
         document.getElementById("subtotalDisplay").textContent = "$0.00"; document.getElementById("ivaDisplay").textContent = "$0.00"; document.getElementById("quoteTotalDisplay").textContent = "$0.00";
         displayQuotes(); resendQuoteWhatsApp(activeIdToSend); syncToCloud();
     }
     function triggerImageUpload(quoteId) { activeQuoteIdForUpload = quoteId; document.getElementById("hiddenFileInput").click(); }
     
+    // COMPRESOR AUTOMÁTICO V30: Reduce imágenes pesadas a KB para evitar bloqueos locales o en Sheets
     function handleFileSelected(input) {
         if (!input.files || !input.files[0]) return;
         var file = input.files[0]; var reader = new FileReader();
@@ -381,11 +429,11 @@
                 else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
                 canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height);
                 var compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                var quotesList = getLocalData("legadoQuotesFinalV29");
+                var quotesList = getLocalData("legadoQuotesFinalV30");
                 for(var i = 0; i < quotesList.length; i++) {
                     if(quotesList[i].id === activeQuoteIdForUpload) { quotesList[i].imageEvidence = compressedBase64; break; }
                 }
-                localStorage.setItem("legadoQuotesFinalV29", JSON.stringify(quotesList)); displayQuotes(); syncToCloud();
+                localStorage.setItem("legadoQuotesFinalV30", JSON.stringify(quotesList)); displayQuotes(); syncToCloud();
             };
             img.src = e.target.result;
         };
@@ -393,23 +441,21 @@
     }
     function openLargeImage(src) { document.getElementById("modalImgSrc").src = src; document.getElementById("imageModal").style.display = "flex"; }
 </script>
-<!-- BLOQUE 9 -->
+<!-- BLOQUE 10 -->
 <script>
     function displayQuotes() {
         var tbody = document.getElementById("quotesTableBody"); if(!tbody) return; tbody.innerHTML = "";
-        var quotes = getLocalData("legadoQuotesFinalV29");
+        var quotes = getLocalData("legadoQuotesFinalV30");
         if(quotes.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:15px;">No hay cotizaciones.</td></tr>'; return; }
         for(var i = 0; i < quotes.length; i++) {
             var q = quotes[i]; var tr = document.createElement("tr");
             
-            // Selector de Aceptado / Rechazado
             var selectStatusHtml = '<select class="table-select" style="background:#334155; color:white; border:1px solid #475569;" onchange="updateQuoteStatus(' + q.id + ', this.value)">' +
                 '<option value="Pendiente"' + (q.quoteStatus === 'Pendiente' ? ' selected' : '') + '>🟡 Pendiente</option>' +
                 '<option value="Aceptado"' + (q.quoteStatus === 'Aceptado' ? ' selected' : '') + '>🟢 Aceptado</option>' +
-                '<option value="Rechazado"' + (q.quoteStatus === 'Rechazado' ? ' selected' : '') + '>白 Rechazado</option>' +
+                '<option value="Rechazado"' + (q.quoteStatus === 'Rechazado' ? ' selected' : '') + '>⚪ Rechazado</option>' +
                 '</select>';
 
-            // Lógica de Evidencia: Solo permite adjuntar si el estatus es "Aceptado"
             var evidenceHtml = '';
             if (q.imageEvidence) {
                 evidenceHtml = '<img src="' + q.imageEvidence + '" class="img-preview" title="Consultar" onclick="openLargeImage(this.src)">';
@@ -427,17 +473,17 @@
     }
     
     function updateQuoteStatus(id, newStatus) {
-        var quotes = getLocalData("legadoQuotesFinalV29");
+        var quotes = getLocalData("legadoQuotesFinalV30");
         for(var i = 0; i < quotes.length; i++) {
             if(quotes[i].id === id) { quotes[i].quoteStatus = newStatus; break; }
         }
-        localStorage.setItem("legadoQuotesFinalV29", JSON.stringify(quotes));
+        localStorage.setItem("legadoQuotesFinalV30", JSON.stringify(quotes));
         displayQuotes(); syncToCloud();
     }
 
     function editQuote(id) {
-        var quotes = getLocalData("legadoQuotesFinalV29"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return;
-        var carList = getLocalData("legadoStorageFinalV28"); var car = carList.find(function(c) { return c.plates === q.plates; });
+        var quotes = getLocalData("legadoQuotesFinalV30"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return;
+        var carList = getLocalData("legadoStorageFinalV30"); var car = carList.find(function(c) { return c.plates === q.plates; });
         if(car) {
             document.getElementById("quoteSelectVehicle").value = car.id; autoFillQuoteData();
             document.getElementById("quoteService").value = q.service; document.getElementById("costParts").value = q.parts;
@@ -446,27 +492,15 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else { alert("El vehículo ya fue entregado o borrado."); }
     }
-</script>
-<!-- BLOQUE 10 -->
-<script>
+
     function resendQuoteWhatsApp(id) {
-        var quotes = getLocalData("legadoQuotesFinalV29"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return;
+        var quotes = getLocalData("legadoQuotesFinalV30"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return;
         var msgQuote = "Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n🧾 *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2);
-        window.open("https://wa.me/" + q.phone + "?text=" + encodeURIComponent(msgQuote), '_blank');
+        window.open("https://wa.me" + q.phone + "?text=" + encodeURIComponent(msgQuote), '_blank');
     }
-    function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { var filtered = getLocalData("legadoQuotesFinalV29").filter(function(q) { return q.id !== id; }); localStorage.setItem("legadoQuotesFinalV29", JSON.stringify(filtered)); displayQuotes(); syncToCloud(); } }
+    function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { var filtered = getLocalData("legadoQuotesFinalV30").filter(function(q) { return q.id !== id; }); localStorage.setItem("legadoQuotesFinalV30", JSON.stringify(filtered)); displayQuotes(); syncToCloud(); } }
     function getLocalData(key) { try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : []; } catch(e) { return []; } }
     function filterOrders() { var q = document.getElementById("searchInput").value.toLowerCase(); var rows = document.querySelectorAll("#ordersTableBody tr"); rows.forEach(function(r) { if(r.cells.length < 2) return; if(r.textContent.toLowerCase().indexOf(q) > -1) { r.style.display = ""; } else { r.style.display = "none"; } }); }
-    function exportToExcel() { var list = getLocalData("legadoStorageFinalV28"); if (list.length === 0) { alert("No hay datos."); return; } var csv = "\uFEFFPlacas;Marca;Modelo;Año;Color;Kilometraje;VIN;Cliente;Telefono;Falla;Estado\n"; for (var i = 0; i < list.length; i++) { var o = list[i]; csv += '"' + o.plates + '";"' + o.brand + '";"' + o.model + '";"' + o.year + '";"' + o.color + '";"' + o.km + '";"' + o.vin + '";"' + o.owner + '";"' + o.phone + '";"' + o.fault + '";"' + o.status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Bitacora_Legado_Completa.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
-    
-    function exportQuotesToExcel() { 
-        var list = getLocalData("legadoQuotesFinalV29"); if (list.length === 0) { alert("No hay cotizaciones para exportar."); return; } 
-        var csv = "\uFEFFPlacas;Cliente;Servicio;Subtotal;IVA_16;Total_Neto;Estatus\n"; 
-        for (var i = 0; i < list.length; i++) { 
-            var q = list[i]; csv += '"' + q.plates + '";"' + q.owner + '";"' + q.service + '";"' + q.subtotal.toFixed(2) + '";"' + q.iva.toFixed(2) + '";"' + q.total.toFixed(2) + '";"' + q.quoteStatus + '"\n'; 
-        } 
-        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_Legado.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); 
-    }
+    function exportToExcel() { var list = getLocalData("legadoStorageFinalV30"); if (list.length === 0) { alert("No hay datos."); return; } var csv = "\uFEFFPlacas;Marca;Modelo;Año;Color;Kilometraje;VIN;Cliente;Telefono;Falla;Estado\n"; for (var i = 0; i < list.length; i++) { var o = list[i]; csv += '"' + o.plates + '";"' + o.brand + '";"' + o.model + '";"' + o.year + '";"' + o.color + '";"' + o.km + '";"' + o.vin + '";"' + o.owner + '";"' + o.phone + '";"' + o.fault + '";"' + o.status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Bitacora_Legado_Completa.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
+    function exportQuotesToExcel() { var list = getLocalData("legadoQuotesFinalV30"); if (list.length === 0) { alert("No hay cotizaciones para exportar."); return; } var csv = "\uFEFFPlacas;Cliente;Servicio;Subtotal;IVA_16;Total_Neto;Estatus\n"; for (var i = 0; i < list.length; i++) { var q = list[i]; csv += '"' + q.plates + '";"' + q.owner + '";"' + q.service + '";"' + q.subtotal.toFixed(2) + '";"' + q.iva.toFixed(2) + '";"' + q.total.toFixed(2) + '";"' + q.quoteStatus + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_Legado.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 </script>
-</body>
-</html>
