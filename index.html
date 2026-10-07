@@ -347,10 +347,12 @@
             var editBtnHtml = isDelivered ? '' : '<button class="deliver-btn" style="background-color:#0284c7;" onclick="editOrder(' + item.id + ')">✏️ Editar</button>';
             var deleteBtnHtml = '<button class="deliver-btn" style="background:#ef4444;" onclick="deleteOrder(' + item.id + ')">Eliminar</button>';
 
-            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="' + whatsUrl + '" target="_blank" class="whats-link">Enviar WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="printRecord()">Imprimir</button></td>';
+            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="' + whatsUrl + '" target="_blank" class="whats-link">Enviar WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="window.print()">Imprimir</button></td>';
             tbody.appendChild(tr);
         }
     }
+</script>
+
 </script>
 
 <!-- BLOQUE 11 -->
@@ -466,9 +468,9 @@
         for(var i = 0; i < quotes.length; i++) {
             var q = quotes[i]; var tr = document.createElement("tr");
             var selectStatusHtml = '<select class="table-select" style="background:#334155; color:white; border:1px solid #475569;" onchange="updateQuoteStatus(' + q.id + ', this.value)">' +
-                '<option value="Pendiente"' + (q.quoteStatus === 'Pendiente' ? ' selected' : '') + '>🟡 Pendiente</option>' +
+                <option value="Pendiente"' + (q.quoteStatus === 'Pendiente' ? ' selected' : '') + '>🟡 Pendiente</option>' +
                 '<option value="Aceptado"' + (q.quoteStatus === 'Aceptado' ? ' selected' : '') + '>🟢 Aceptado</option>' +
-                '<option value="Rechazado"' + (q.quoteStatus === 'Rechazado' ? ' selected' : '') + '>⚪ Rechazado</option>' +
+                '<option value="Rechazado"' + (q.quoteStatus === 'Rechazado' ? ' selected' : '') + '>白 Rechazado</option>' +
                 '</select>';
 
             var evidenceHtml = '';
@@ -476,7 +478,7 @@
             else if (q.quoteStatus === 'Aceptado') { evidenceHtml = '<button type="button" class="accept-btn" onclick="triggerImageUpload(' + q.id + ')">➕ Adjuntar Captura</button>'; } 
             else { evidenceHtml = '<span style="color:#64748b; font-size:12px;">Requiere ser Aceptado</span>'; }
 
-            tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + q.subtotal.toFixed(2) + '</td><td>$' + q.iva.toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + q.total.toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Reenviar WhatsApp</button><button type="button" class="btn-print" onclick="printRecord()">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
+            tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + q.subtotal.toFixed(2) + '</td><td>$' + q.iva.toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + q.total.toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Reenviar WhatsApp</button><button type="button" class="btn-print" onclick="window.print()">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
             tbody.appendChild(tr);
         }
     }
@@ -502,7 +504,7 @@
     function resendQuoteWhatsApp(id) {
         var quotes = getLocalData("legadoQuotesFinalV30"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return;
         var msgQuote = "Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n🧾 *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2);
-        window.open("https://wa.me/" + q.phone + "?text=" + encodeURIComponent(msgQuote), '_blank');
+        window.open("https://wa.me" + q.phone + "?text=" + encodeURIComponent(msgQuote), '_blank');
     }
     function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { var filtered = getLocalData("legadoQuotesFinalV30").filter(function(q) { return q.id !== id; }); localStorage.setItem("legadoQuotesFinalV30", JSON.stringify(filtered)); displayQuotes(); syncToCloud(); } }
     function getLocalData(key) { try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : []; } catch(e) { return []; } }
@@ -510,4 +512,3 @@
     function exportToExcel() { var list = getLocalData("legadoStorageFinalV30"); if (list.length === 0) { alert("No hay datos."); return; } var csv = "\uFEFFPlacas;Marca;Modelo;Año;Color;Kilometraje;VIN;Cliente;Telefono;Falla;Estado\n"; for (var i = 0; i < list.length; i++) { var o = list[i]; csv += '"' + o.plates + '";"' + o.brand + '";"' + o.model + '";"' + o.year + '";"' + o.color + '";"' + o.km + '";"' + o.vin + '";"' + o.owner + '";"' + o.phone + '";"' + o.fault + '";"' + o.status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Bitacora_Legado_Completa.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
     function exportQuotesToExcel() { var list = getLocalData("legadoQuotesFinalV30"); if (list.length === 0) { alert("No hay cotizaciones para exportar."); return; } var csv = "\uFEFFPlacas;Cliente;Servicio;Subtotal;IVA_16;Total_Neto;Estatus\n"; for (var i = 0; i < list.length; i++) { var q = list[i]; csv += '"' + q.plates + '";"' + q.owner + '";"' + q.service + '";"' + q.subtotal.toFixed(2) + '";"' + q.iva.toFixed(2) + '";"' + q.total.toFixed(2) + '";"' + q.quoteStatus + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_Legado.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 </script>
-
