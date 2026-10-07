@@ -22,8 +22,27 @@
         .nav-btn.active { background-color: #38bdf8; color: #0f172a; }
         .screen { display: none; }
         .screen.active { display: block; }
+
+        /* REGLAS DE IMPRESIÓN MÓVIL Y PC: Aísla las secciones para que todo quepa en 1 sola hoja limpia */
+        @media print {
+            body { background: white; color: black; padding: 0; margin: 0; }
+            .container { box-shadow: none; background: white; padding: 0; max-width: 100%; }
+            h1 { color: black !important; font-size: 20px; margin-bottom: 10px; }
+            .cloud-panel, .main-nav, #orderForm, #quoteForm, .tabs-container, .table-tools, h2 { display: none !important; }
+            table { width: 100% !important; min-width: 100% !important; border: 1px solid black !important; page-break-inside: avoid; }
+            th, td { color: black !important; background: transparent !important; border: 1px solid black !important; padding: 8px !important; font-size: 12px !important; }
+            th:last-child, td:last-child { display: none !important; } /* Esconde los botones de acción al imprimir */
+            .row-blocked { opacity: 1 !important; }
+            
+            /* Si imprimimos desde la pestaña de Órdenes, esconde por completo la sección de dinero de abajo */
+            #screenOrders.active ~ #screenQuotes, #screenQuotes { display: none !important; }
+            /* Si imprimimos desde el Cotizador, esconde la bitácora de arriba */
+            #screenOrders { display: none !important; }
+            #screenQuotes.active { display: block !important; }
+        }
     </style>
 </head>
+
 <!-- BLOQUE 2 -->
 <head>
     <style>
