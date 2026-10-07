@@ -348,6 +348,35 @@
         }
     }
 
+    // NUEVA FUNCIÓN: Diseña y abre una hoja de servicio individual y profesional para el cliente
+    function printSingleOrder(id) {
+        var list = getLocalData("legadoStorageFinalV35");
+        var car = list.find(function(x) { return x.id === id; });
+        if (!car) return;
+
+        var textStatus = (car.status === 'Revision') ? '🔴 En revisión' : (car.status === 'Proceso') ? '🟡 En proceso' : (car.status === 'Terminado') ? '🟢 Terminado' : car.status;
+
+        // Genera una ventana temporal con formato de orden física de taller
+        var printWindow = window.open('', '_blank');
+        printWindow.document.write('<html><head><title>Orden de Servicio - Legado</title>');
+        printWindow.document.write('<style>body{font-family:sans-serif;padding:30px;color:#000;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:30px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:30px;} .box{border:1px solid #000;padding:15px;border-radius:6px;margin-bottom:25px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:14px;} .signature{margin-top:60px;display:flex;justify-content:space-around;} .line{border-top:1px solid #000;width:200px;text-align:center;padding-top:5px;font-size:12px;}</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write('<div class="header"><h1>🔧 TALLER MECÁNICO LEGADO</h1><p>Orden de Recepción y Diagnóstico de Servicio</p></div>');
+        printWindow.document.write('<div class="grid">');
+        printWindow.document.write('<div><div class="title">Datos del Cliente:</div><b>Nombre:</b> ' + car.owner + '<br><b>Contacto:</b> +' + car.phone + '</div>');
+        printWindow.document.write('<div><div class="title">Datos del Vehículo:</div><b>Placas:</b> ' + car.plates + '<br><b>Unidad:</b> ' + car.brand + ' ' + car.model + ' (' + car.year + '/' + car.color + ')<br><b>Kilometraje:</b> ' + car.km + '<br><b>Número VIN:</b> ' + car.vin + '</div>');
+        printWindow.document.write('</div>');
+        printWindow.document.write('<div class="box"><div class="title">Falla Reportada / Diagnóstico Inicial:</div><p style="font-size:15px; white-space:pre-wrap;">' + car.fault + '</p></div>');
+        printWindow.document.write('<div class="box"><b>Estado de la Unidad en Taller:</b> ' + textStatus + '</div>');
+        printWindow.document.write('<div class="signature"><div class="line">Firma del Mecánico</div><div class="line">Firma de Conformidad Cliente</div></div>');
+        printWindow.document.write('</body></html>');
+        
+        printWindow.document.close();
+        printWindow.focus();
+        // Lanza la impresora nativa del celular o PC de forma inmediata
+        setTimeout(function(){ printWindow.print(); printWindow.close(); }, 500);
+    }
+
     function displayOrders() {
         var tbody = document.getElementById("ordersTableBody"); if(!tbody) return; tbody.innerHTML = "";
         var list = getLocalData("legadoStorageFinalV35");
@@ -375,11 +404,12 @@
             var editBtnHtml = isDelivered ? '' : '<button class="deliver-btn" style="background-color:#0284c7;" onclick="editOrder(' + item.id + ')">✏️ Editar</button>';
             var deleteBtnHtml = '<button class="deliver-btn" style="background:#ef4444;" onclick="deleteOrder(' + item.id + ')">Eliminar</button>';
 
-            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="' + whatsUrl + '" target="_blank" class="whats-link">Enviar WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="window.print()">Imprimir</button></td>';
+            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="' + whatsUrl + '" target="_blank" class="whats-link">Enviar WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="printSingleOrder(' + item.id + ')">Imprimir</button></td>';
             tbody.appendChild(tr);
         }
     }
 </script>
+
 <!-- BLOQUE 11 -->
 <script>
     function updateStatus(id, newStatus) {
@@ -481,6 +511,35 @@
 <script>
     function openLargeImage(src) { document.getElementById("modalImgSrc").src = src; document.getElementById("imageModal").style.display = "flex"; }
 
+    // NUEVA FUNCIÓN: Genera un formato membretado de presupuesto financiero individual
+    function printSingleQuote(id) {
+        var quotes = getLocalData("legadoQuotesFinalV35");
+        var q = quotes.find(function(x) { return x.id == id; });
+        if (!q) return;
+
+        var printWindow = window.open('', '_blank');
+        printWindow.document.write('<html><head><title>Presupuesto - Legado</title>');
+        printWindow.document.write('<style>body{font-family:sans-serif;padding:30px;color:#000;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:30px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:25px;} .box{border:1px solid #000;padding:15px;border-radius:6px;margin-bottom:20px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:14px;} .total-box{text-align:right;font-size:16px;margin-top:20px;line-height:1.6;} .signature{margin-top:50px;text-align:center;font-size:12px;}</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write('<div class="header"><h1>💰 CO-TIZACIÓN DE SERVICIO</h1><p>Taller Mecánico Legado - Presupuesto Técnico</p></div>');
+        printWindow.document.write('<div class="grid">');
+        printWindow.document.write('<div><div class="title">Cliente:</div><b>Nombre:</b> ' + q.owner + '</div>');
+        printWindow.document.write('<div><div class="title">Vehículo Vinculado:</div><b>Placas:</b> ' + q.plates + '<br><b>Unidad:</b> ' + q.vehicle + '</div>');
+        printWindow.document.write('</div>');
+        printWindow.document.write('<div class="box"><div class="title">Descripción del Trabajo / Refacciones:</div><p style="font-size:15px; white-space:pre-wrap;">' + q.service + '</p></div>');
+        printWindow.document.write('<div class="total-box">');
+        printWindow.document.write('<b>Subtotal Operación:</b> $' + q.subtotal.toFixed(2) + '<br>');
+        printWindow.document.write('<b>IVA Trasladado (16%):</b> $' + q.iva.toFixed(2) + '<br>');
+        printWindow.document.write('<span style="font-size:20px;color:#10b981;"><b>TOTAL NETO:</b> $' + q.total.toFixed(2) + '</span>');
+        printWindow.document.write('</div>');
+        printWindow.document.write('<div class="signature"><p>Este presupuesto tiene una vigencia de 15 días naturales a partir de su emisión.</p></div>');
+        printWindow.document.write('</body></html>');
+        
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(function(){ printWindow.print(); printWindow.close(); }, 500);
+    }
+
     function displayQuotes() {
         var tbody = document.getElementById("quotesTableBody"); if(!tbody) return; tbody.innerHTML = "";
         var quotes = getLocalData("legadoQuotesFinalV35");
@@ -498,7 +557,7 @@
             else if (q.quoteStatus === 'Aceptado') { evidenceHtml = '<button type="button" class="accept-btn" onclick="triggerImageUpload(' + q.id + ')">➕ Adjuntar Captura</button>'; } 
             else { evidenceHtml = '<span style="color:#64748b; font-size:12px;">Requiere ser Aceptado</span>'; }
 
-            tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + q.subtotal.toFixed(2) + '</td><td>$' + q.iva.toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + q.total.toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Reenviar WhatsApp</button><button type="button" class="btn-print" onclick="window.print()">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
+            tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + q.subtotal.toFixed(2) + '</td><td>$' + q.iva.toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + q.total.toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Reenviar WhatsApp</button><button type="button" class="btn-print" onclick="printSingleQuote(' + q.id + ')">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
             tbody.appendChild(tr);
         }
     }
@@ -523,7 +582,7 @@
 
     function resendQuoteWhatsApp(id) {
         var quotes = getLocalData("legadoQuotesFinalV35"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return;
-        var msgQuote = "Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n¼ *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2);
+        var msgQuote = "Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n🧾 *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2);
         window.open("https://wa.me/" + q.phone + "?text=" + encodeURIComponent(msgQuote), '_blank');
     }
     function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { var filtered = getLocalData("legadoQuotesFinalV35").filter(function(q) { return q.id !== id; }); localStorage.setItem("legadoQuotesFinalV35", JSON.stringify(filtered)); displayQuotes(); syncToCloud(); } }
