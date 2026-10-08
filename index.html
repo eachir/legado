@@ -448,6 +448,8 @@
         document.getElementById("ivaDisplay").textContent = "$" + iva.toFixed(2);
         document.getElementById("quoteTotalDisplay").textContent = "$" + total.toFixed(2);
     }
+    
+    // TRUCO UNIFICACIÓN V50: Guarda el dinero exactamente en la misma gaveta que lee el motor de la nube
     function saveQuote() {
         var carId = document.getElementById("quoteSelectVehicle").value;
         var service = document.getElementById("quoteService").value.trim().toUpperCase();
@@ -470,10 +472,13 @@
             var newQuote = { id: Date.now(), plates: car.plates, owner: car.owner, phone: car.phone, vehicle: car.brand + " " + car.model, service: service, subtotal: subtotal, iva: iva, total: total, imageEvidence: "", quoteStatus: "Pendiente" };
             quotesList.push(newQuote); var activeIdToSend = newQuote.id;
         }
+        
+        // Guarda los datos usando estrictamente la clave unificada V50
         localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(quotesList));
         document.getElementById("quoteForm").reset(); calculateQuoteTotal(); displayQuotes(); resendQuoteWhatsApp(activeIdToSend); syncToCloud();
     }
 </script>
+
 <!-- BLOQUE 16 -->
 <script>
     function triggerImageUpload(quoteId) { activeQuoteIdForUpload = quoteId; document.getElementById("hiddenFileInput").click(); }
@@ -490,14 +495,14 @@
                 else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
                 canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height);
                 
-                var quotesList = getLocalData("legadoQuotesFinalV50");
+               var quotesList = getLocalData("legadoQuotesFinalV50");
                 for(var i = 0; i < quotesList.length; i++) { 
                     if(quotesList[i].id === activeQuoteIdForUpload) { 
                         quotesList[i].imageEvidence = canvas.toDataURL('image/jpeg', 0.7); 
                         break; 
                     } 
                 }
-                localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(quotesList)); displayQuotes(); syncToCloud();
+               localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(quotesList));displayQuotes(); syncToCloud();
             };
             img.src = e.target.result;
         };
