@@ -44,24 +44,48 @@
 </head>
 
 <!-- BLOQUE 2 -->
-<head>
-    <style>
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group.full-width { grid-column: 1 / -1; }
-        label { font-weight: 600; margin-bottom: 5px; color: #94a3b8; font-size: 14px; }
-        input, select, textarea { background: #334155; border: 1px solid #475569; padding: 10px; border-radius: 6px; color: white; font-size: 15px; }
-        input:readonly { background: #1e293b; color: #94a3b8; cursor: not-allowed; }
-        
-        .btn-primary { background-color: #38bdf8; color: #0f172a; border: none; font-weight: bold; padding: 12px; border-radius: 6px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 15px; }
-        .btn-excel { background-color: #10b981; color: white; border: none; font-weight: bold; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
-        .btn-print { background-color: #6366f1; color: white; border: none; font-weight: bold; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        
-        .tabs-container { display: flex; gap: 10px; margin-top: 20px; }
-        .tab-btn { background-color: #334155; color: #94a3b8; border: none; padding: 10px 20px; font-weight: bold; border-radius: 6px 6px 0 0; cursor: pointer; font-size: 14px; }
-        .tab-btn.active { background-color: #0f172a; color: #38bdf8; border-bottom: 2px solid #38bdf8; }
-    </style>
-</head>
+<body>
+<div class="container">
+    <h1>🔧 Taller Mecánico Legado</h1>
+    
+    <div class="cloud-panel" style="display:none;" id="cloudPanelContainer">
+        <label style="color: #38bdf8; font-weight: bold;">🌐 Sincronización Multiplataforma (Google Sheets URL):</label>
+        <input type="text" id="cloudUrlInput" placeholder="Pega tu enlace de Google Apps Script que termina en /exec..." onchange="saveCloudUrl()">
+    </div>
+
+    <div class="main-nav">
+        <button id="navOrders" class="nav-btn active" onclick="showScreen('orders')">📋 Órdenes de Servicio</button>
+        <button id="navQuotes" class="nav-btn" onclick="showScreen('quotes')">💰 Cotizador de Servicios</button>
+    </div>
+
+    <!-- PANTALLA 1: BITÁCORA -->
+    <div id="screenOrders" class="screen active">
+        <h2>Registrar Nueva Orden de Servicio</h2>
+        <form id="orderForm">
+            <div class="form-grid">
+                <div class="form-group"><label>Placas:</label><input type="text" id="plates" placeholder="Ej. ABC-1234" oninput="this.value = this.value.toUpperCase()" onblur="searchExistingVehicle()"></div>
+                <div class="form-group"><label>Marca:</label><input type="text" id="brand" placeholder="Ej. Toyota" oninput="this.value = this.value.toUpperCase()"></div>
+                <div class="form-group"><label>Modelo:</label><input type="text" id="model" placeholder="Ej. Corolla" oninput="this.value = this.value.toUpperCase()"></div>
+                <div class="form-group"><label>Año:</label><input type="text" id="year" placeholder="Ej. 2018" oninput="this.value = this.value.toUpperCase()"></div>
+                <div class="form-group"><label>Color:</label><input type="text" id="color" placeholder="Ej. Rojo" oninput="this.value = this.value.toUpperCase()"></div>
+                <div class="form-group"><label>Kilometraje:</label><input type="text" id="km" placeholder="Ej. 85000 KM" oninput="this.value = this.value.toUpperCase()"></div>
+                <div class="form-group"><label>Número VIN:</label><input type="text" id="vin" placeholder="17 dígitos" oninput="this.value = this.value.toUpperCase()"></div>
+                <div class="form-group"><label>Nombre del Dueño:</label><input type="text" id="owner" placeholder="Ej. Juan" oninput="this.value = this.value.toUpperCase()"></div>
+                <div class="form-group"><label>Teléfono (México):</label><input type="tel" id="phone" placeholder="Ej. 4421234567"></div>
+                <div class="form-group"><label>Estado Inicial:</label>
+                    <select id="status">
+                        <option value="Revision">🔴 En revisión</option>
+                        <option value="Proceso">🟡 En proceso</option>
+                        <option value="Terminado">🟢 Terminado</option>
+                    </select>
+                </div>
+                <div class="form-group full-width"><label>Falla reportada:</label><textarea id="fault" placeholder="Detalles..." rows="3" oninput="this.value = this.value.toUpperCase()"></textarea></div>
+                <!-- NUEVO CAMPO: Captura de fotos del estado del vehículo -->
+                <div class="form-group full-width"><label style="color:#38bdf8;">📸 Fotos de Recepción (Máx 4 imágenes):</label><input type="file" id="carPhotosInput" accept="image/*" multiple onchange="processCarPhotos(this)"></div>
+            </div>
+            <button type="button" class="btn-primary" id="btnSaveOrder" onclick="saveOrder()">Guardar en Bitácora</button>
+        </form>
+
 <!-- BLOQUE 3 -->
 <head>
     <style>
@@ -274,10 +298,37 @@
 </script>
 <!-- BLOQUE 9 -->
 <script>
+    var tempCarPhotos = []; // Almacén temporal de fotos comprimidas del carro
+
+    // Procesa y comprime las múltiples fotos del auto antes de guardarlas
+    function processCarPhotos(input) {
+        if (!input.files || input.files.length === 0) return;
+        tempCarPhotos = [];
+        var files = Array.from(input.files).slice(0, 4); // Limita a máximo 4 fotos
+        
+        files.forEach(function(file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    var canvas = document.createElement('canvas'); var ctx = canvas.getContext('2d');
+                    var maxWidth = 600; var maxHeight = 600; var width = img.width; var height = img.height;
+                    if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } } 
+                    else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
+                    canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height);
+                    var compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                    tempCarPhotos.push(compressedBase64);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
     function searchExistingVehicle() {
         var inputPlates = document.getElementById("plates").value.trim().toUpperCase();
         if (inputPlates === "") return;
-        var list = getLocalData("legadoStorageFinalV35");
+        var list = getLocalData("legadoStorageFinalV36");
         if (list.length === 0) return;
         var car = null;
         for (var i = list.length - 1; i >= 0; i--) {
@@ -311,27 +362,31 @@
         var cleanPhone = ph.replace(/[^0-9]/g, '');
         if (cleanPhone.length === 10 && !cleanPhone.startsWith("52")) { cleanPhone = "52" + cleanPhone; }
 
-        var list = getLocalData("legadoStorageFinalV35");
+        var list = getLocalData("legadoStorageFinalV36");
         if (editingOrderId !== null) {
             for (var i = 0; i < list.length; i++) {
                 if (list[i].id === editingOrderId) {
                     list[i].plates = p; list[i].brand = b; list[i].model = m; list[i].year = y;
                     list[i].color = c; list[i].km = k; list[i].vin = v; list[i].owner = o;
-                    list[i].phone = cleanPhone; list[i].fault = f; list[i].status = s; break;
+                    list[i].phone = cleanPhone; list[i].fault = f; list[i].status = s; 
+                    // Conservar fotos viejas si no se subieron nuevas en la edición
+                    if(tempCarPhotos.length > 0) { list[i].carPhotos = tempCarPhotos; }
+                    break;
                 }
             }
             editingOrderId = null; document.getElementById("btnSaveOrder").textContent = "Guardar en Bitácora";
         } else {
-            list.push({ id: Date.now(), plates: p, brand: b, model: m, year: y, color: c, km: k, vin: v, owner: o, phone: cleanPhone, fault: f, status: s });
+            list.push({ id: Date.now(), plates: p, brand: b, model: m, year: y, color: c, km: k, vin: v, owner: o, phone: cleanPhone, fault: f, status: s, carPhotos: tempCarPhotos });
         }
-        localStorage.setItem("legadoStorageFinalV35", JSON.stringify(list));
-        document.getElementById("orderForm").reset(); displayOrders(); updateVehicleDropdown(); syncToCloud();
+        localStorage.setItem("legadoStorageFinalV36", JSON.stringify(list));
+        document.getElementById("orderForm").reset(); tempCarPhotos = []; displayOrders(); updateVehicleDropdown(); syncToCloud();
     }
 </script>
+
 <!-- BLOQUE 10 -->
 <script>
     function editOrder(id) {
-        var list = getLocalData("legadoStorageFinalV35"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
+        var list = getLocalData("legadoStorageFinalV36"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
         document.getElementById("plates").value = car.plates; document.getElementById("brand").value = car.brand;
         document.getElementById("model").value = car.model; document.getElementById("year").value = car.year;
         document.getElementById("color").value = car.color; document.getElementById("km").value = car.km;
@@ -343,68 +398,69 @@
 
     function deleteOrder(id) {
         if(confirm("¿Seguro de ELIMINAR permanentemente esta orden?")) {
-            var filtered = getLocalData("legadoStorageFinalV35").filter(function(x) { return x.id !== id; });
-            localStorage.setItem("legadoStorageFinalV35", JSON.stringify(filtered)); displayOrders(); updateVehicleDropdown(); syncToCloud();
+            var filtered = getLocalData("legadoStorageFinalV36").filter(function(x) { return x.id !== id; });
+            localStorage.setItem("legadoStorageFinalV36", JSON.stringify(filtered)); displayOrders(); updateVehicleDropdown(); syncToCloud();
         }
     }
 
-    // NUEVA FUNCIÓN: Diseña y abre una hoja de servicio individual y profesional para el cliente
     function printSingleOrder(id) {
-        var list = getLocalData("legadoStorageFinalV35");
-        var car = list.find(function(x) { return x.id === id; });
-        if (!car) return;
-
+        var list = getLocalData("legadoStorageFinalV36"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
         var textStatus = (car.status === 'Revision') ? '🔴 En revisión' : (car.status === 'Proceso') ? '🟡 En proceso' : (car.status === 'Terminado') ? '🟢 Terminado' : car.status;
 
-        // Genera una ventana temporal con formato de orden física de taller
         var printWindow = window.open('', '_blank');
-        printWindow.document.write('<html><head><title>Orden de Servicio - Legado</title>');
-        printWindow.document.write('<style>body{font-family:sans-serif;padding:30px;color:#000;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:30px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:30px;} .box{border:1px solid #000;padding:15px;border-radius:6px;margin-bottom:25px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:14px;} .signature{margin-top:60px;display:flex;justify-content:space-around;} .line{border-top:1px solid #000;width:200px;text-align:center;padding-top:5px;font-size:12px;}</style>');
+        printWindow.document.write('<html><head><title>Orden - Legado</title>');
+        printWindow.document.write('<style>body{font-family:sans-serif;padding:25px;color:#000;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:20px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;} .box{border:1px solid #000;padding:12px;border-radius:6px;margin-bottom:15px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:13px;} .photo-grid{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap;} .photo-grid img{width:120px;height:90px;object-fit:cover;border:1px solid #000;border-radius:4px;} .signature{margin-top:40px;display:flex;justify-content:space-around;} .line{border-top:1px solid #000;width:180px;text-align:center;padding-top:5px;font-size:11px;}</style>');
         printWindow.document.write('</head><body>');
-        printWindow.document.write('<div class="header"><h1>🔧 TALLER MECÁNICO LEGADO</h1><p>Orden de Recepción y Diagnóstico de Servicio</p></div>');
+        printWindow.document.write('<div class="header"><h1>🔧 TALLER MECÁNICO LEGADO</h1><p>Orden de Recepción y Diagnóstico Oficial</p></div>');
         printWindow.document.write('<div class="grid">');
-        printWindow.document.write('<div><div class="title">Datos del Cliente:</div><b>Nombre:</b> ' + car.owner + '<br><b>Contacto:</b> +' + car.phone + '</div>');
-        printWindow.document.write('<div><div class="title">Datos del Vehículo:</div><b>Placas:</b> ' + car.plates + '<br><b>Unidad:</b> ' + car.brand + ' ' + car.model + ' (' + car.year + '/' + car.color + ')<br><b>Kilometraje:</b> ' + car.km + '<br><b>Número VIN:</b> ' + car.vin + '</div>');
+        printWindow.document.write('<div><div class="title">Cliente:</div><b>Nombre:</b> ' + car.owner + '<br><b>Contacto:</b> +' + car.phone + '</div>');
+        printWindow.document.write('<div><div class="title">Vehículo:</div><b>Placas:</b> ' + car.plates + '<br><b>Unidad:</b> ' + car.brand + ' ' + car.model + ' (' + car.year + '/' + car.color + ')<br><b>KM:</b> ' + car.km + '</div>');
         printWindow.document.write('</div>');
-        printWindow.document.write('<div class="box"><div class="title">Falla Reportada / Diagnóstico Inicial:</div><p style="font-size:15px; white-space:pre-wrap;">' + car.fault + '</p></div>');
-        printWindow.document.write('<div class="box"><b>Estado de la Unidad en Taller:</b> ' + textStatus + '</div>');
+        printWindow.document.write('<div class="box"><div class="title">Falla Reportada:</div><p style="margin:0; white-space:pre-wrap;">' + car.fault + '</p></div>');
+        
+        // Inyecta las fotos en la hoja de impresión individual
+        if (car.carPhotos && car.carPhotos.length > 0) {
+            printWindow.document.write('<div class="box"><div class="title">Evidencia Visual de Recepción:</div><div class="photo-grid">');
+            car.carPhotos.forEach(function(src) { printWindow.document.write('<img src="' + src + '">'); });
+            printWindow.document.write('</div></div>');
+        }
+        
+        printWindow.document.write('<div class="box"><b>Estado Actual:</b> ' + textStatus + '</div>');
         printWindow.document.write('<div class="signature"><div class="line">Firma del Mecánico</div><div class="line">Firma de Conformidad Cliente</div></div>');
         printWindow.document.write('</body></html>');
-        
-        printWindow.document.close();
-        printWindow.focus();
-        // Lanza la impresora nativa del celular o PC de forma inmediata
+        printWindow.document.close(); printWindow.focus();
         setTimeout(function(){ printWindow.print(); printWindow.close(); }, 500);
     }
 
     function displayOrders() {
         var tbody = document.getElementById("ordersTableBody"); if(!tbody) return; tbody.innerHTML = "";
-        var list = getLocalData("legadoStorageFinalV35");
-        var filteredList = list.filter(function(item) {
-            if (currentView === 'activos') return item.status !== 'Entregado';
-            return item.status === 'Entregado';
-        });
-        if (filteredList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No hay registros.</td></tr>'; return;
-        }
+        var list = getLocalData("legadoStorageFinalV36");
+        var filteredList = list.filter(function(item) { return currentView === 'activos' ? item.status !== 'Entregado' : item.status === 'Entregado'; });
+        if (filteredList.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No hay registros.</td></tr>'; return; }
+        
         for (var i = 0; i < filteredList.length; i++) {
             var item = filteredList[i]; var tr = document.createElement("tr");
-            var isDelivered = (item.status === 'Entregado'); if (isDelivered) tr.className = "row-blocked";
+            if (item.status === 'Entregado') tr.className = "row-blocked";
             
-            var selectHtml = '<select class="table-select sel-' + item.status + '" onchange="updateStatus(' + item.id + ', this.value)"' + (isDelivered ? ' disabled' : '') + '>';
-            if (isDelivered) { selectHtml += '<option value="Entregado" selected>🔘 Entregado</option>'; } 
-            else { selectHtml += '<option value="Revision"' + (item.status === 'Revision' ? ' selected' : '') + '>🔴 En revisión</option><option value="Proceso"' + (item.status === 'Proceso' ? ' selected' : '') + '>🟡 En proceso</option><option value="Terminado"' + (item.status === 'Terminado' ? ' selected' : '') + '>🟢 Terminado</option>'; }
-            selectHtml += '</select>';
+            var selectHtml = '<select class="table-select sel-' + item.status + '" onchange="updateStatus(' + item.id + ', this.value)"' + (item.status === 'Entregado' ? ' disabled' : '') + '><option value="Revision"' + (item.status === 'Revision' ? ' selected' : '') + '>🔴 En revisión</option><option value="Proceso"' + (item.status === 'Proceso' ? ' selected' : '') + '>🟡 En proceso</option><option value="Terminado"' + (item.status === 'Terminado' ? ' selected' : '') + '>🟢 Terminado</option></select>';
+            if(item.status === 'Entregado') selectHtml = '<select class="table-select sel-Entregado" disabled><option>🔘 Entregado</option></select>';
+
+            // Dibuja las miniaturas clicables en la tabla de bitácora
+            var photosHtml = '';
+            if (item.carPhotos && item.carPhotos.length > 0) {
+                photosHtml = '<div style="display:flex; gap:3px; margin-top:5px;">';
+                item.carPhotos.forEach(function(src) { photosHtml += '<img src="' + src + '" class="img-preview" style="max-width:30px; max-height:20px;" onclick="openLargeImage(this.src)">'; });
+                photosHtml += '</div>';
+            }
 
             var textStatus = (item.status === 'Revision') ? 'En revisión' : (item.status === 'Proceso') ? 'En proceso' : (item.status === 'Terminado') ? 'Terminado' : item.status;
             var msg = "Hola " + item.owner + ", Taller Legado. Tu " + item.brand + " [" + item.plates + "] esta en estado: *" + textStatus + "*.";
             var whatsUrl = "https://wa.me/" + item.phone + "?text=" + encodeURIComponent(msg);
-            
-            var actionBtn = isDelivered ? '<b>Concluido</b>' : '<button class="deliver-btn" onclick="deliverVehicle(' + item.id + ')">Entregar</button>';
-            var editBtnHtml = isDelivered ? '' : '<button class="deliver-btn" style="background-color:#0284c7;" onclick="editOrder(' + item.id + ')">✏️ Editar</button>';
+            var actionBtn = item.status === 'Entregado' ? '<b>Concluido</b>' : '<button class="deliver-btn" onclick="deliverVehicle(' + item.id + ')">Entregar</button>';
+            var editBtnHtml = item.status === 'Entregado' ? '' : '<button class="deliver-btn" style="background-color:#0284c7;" onclick="editOrder(' + item.id + ')">✏️ Editar</button>';
             var deleteBtnHtml = '<button class="deliver-btn" style="background:#ef4444;" onclick="deleteOrder(' + item.id + ')">Eliminar</button>';
 
-            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="' + whatsUrl + '" target="_blank" class="whats-link">Enviar WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="printSingleOrder(' + item.id + ')">Imprimir</button></td>';
+            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')' + photosHtml + '</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="' + whatsUrl + '" target="_blank" class="whats-link">Enviar WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="printSingleOrder(' + item.id + ')">Imprimir</button></td>';
             tbody.appendChild(tr);
         }
     }
