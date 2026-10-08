@@ -237,25 +237,25 @@
         .catch(function(err) { console.log("Cargando base de datos local..."); });
     }
 
-    // NÚCLEO CORREGIDO PARA CHROME: Envía los datos en formato de formulario para saltarse el bloqueo de seguridad
+    // NÚCLEO MAESTRO REPARADO: Encapsula el JSON masivo en un contenedor FormData binario para que Chrome no rompa las fotos
     function syncToCloud() {
         if (!cloudUrl) return;
         var orders = getLocalData("legadoStorageFinalV50");
         var quotes = getLocalData("legadoQuotesFinalV50");
-        
         var payload = { orders: orders, quotes: quotes };
-        var formBody = new URLSearchParams();
-        formBody.append("jsonData", JSON.stringify(payload));
+        
+        var formData = new FormData();
+        formData.append("cloudData", JSON.stringify(payload));
 
         fetch(cloudUrl, {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: formBody.toString()
+            body: formData
         })
-        .then(function() { console.log("✓ Sincronizado con éxito en la nube de Google"); })
+        .then(function() { console.log("✓ Sincronización exitosa y blindada en la nube."); })
         .catch(function(err) { console.error("Error al transmitir a la nube:", err); });
     }
 </script>
+
 
 <!-- BLOQUE 11 -->
 <script>
