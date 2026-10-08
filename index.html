@@ -91,7 +91,7 @@
 <div class="container">
     <h1>🔧 Taller Mecánico Legado</h1>
     
-    <!-- Blindaje de Seguridad: El "display:none" mantiene oculta la URL frente a mecánicos -->
+    <!-- Blindaje de Seguridad: El "display:none" mantiene oculta la URL ante mecánicos -->
     <div class="cloud-panel" style="display:none;" id="cloudPanelContainer">
         <label style="color: #38bdf8; font-weight: bold;">🌐 Sincronización Multiplataforma (Google Sheets URL):</label>
         <input type="text" id="cloudUrlInput" placeholder="Pega tu enlace de Google Apps Script que termina en /exec..." onchange="saveCloudUrl()">
@@ -107,6 +107,7 @@
         <h2>Registrar Nueva Orden de Servicio</h2>
         <form id="orderForm">
             <div class="form-grid">
+                <div class="form-grid">
                 <div class="form-group"><label>Placas:</label><input type="text" id="plates" placeholder="Ej. ABC-1234" oninput="this.value = this.value.toUpperCase()" onblur="searchExistingVehicle()"></div>
                 <div class="form-group"><label>Marca:</label><input type="text" id="brand" placeholder="Ej. Toyota" oninput="this.value = this.value.toUpperCase()"></div>
                 <div class="form-group"><label>Modelo:</label><input type="text" id="model" placeholder="Ej. Corolla" oninput="this.value = this.value.toUpperCase()"></div>
@@ -206,6 +207,7 @@
         loadAllData();
     }
 
+    // ARREGLO DE CACHÉ: Cambia de pestaña de forma limpia
     function showScreen(name) {
         document.getElementById("screenOrders").style.display = (name === 'orders') ? "block" : "none";
         document.getElementById("screenQuotes").style.display = (name === 'quotes') ? "block" : "none";
@@ -228,21 +230,21 @@
         fetch(cloudUrl + "?action=read")
         .then(function(res) { return res.json(); })
         .then(function(cloudData) {
-            if (cloudData.orders) localStorage.setItem("legadoStorageFinalV45", JSON.stringify(cloudData.orders));
-            if (cloudData.quotes) localStorage.setItem("legadoQuotesFinalV45", JSON.stringify(cloudData.quotes));
+            if (cloudData.orders) localStorage.setItem("legadoStorageFinalV50", JSON.stringify(cloudData.orders));
+            if (cloudData.quotes) localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(cloudData.quotes));
             displayOrders(); displayQuotes(); updateVehicleDropdown();
         })
-        .catch(function(err) { console.log("Modo offline activo."); });
+        .catch(function(err) { console.log("Modo offline."); });
     }
 
+    // REPARACIÓN CRÍTICA CHROME: Se eliminó el "mode: no-cors" opaco para que Google sí reciba los datos
     function syncToCloud() {
         if (!cloudUrl) return;
-        var orders = getLocalData("legadoStorageFinalV45");
-        var quotes = getLocalData("legadoQuotesFinalV45");
+        var orders = getLocalData("legadoStorageFinalV50");
+        var quotes = getLocalData("legadoQuotesFinalV50");
         fetch(cloudUrl, {
             method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({ orders: orders, quotes: quotes })
         }).catch(function(err) { console.error("Error nube:", err); });
     }
@@ -277,7 +279,7 @@
     function searchExistingVehicle() {
         var inputPlates = document.getElementById("plates").value.trim().toUpperCase();
         if (inputPlates === "") return;
-        var list = getLocalData("legadoStorageFinalV45");
+        var list = getLocalData("legadoStorageFinalV50");
         if (list.length === 0) return;
         
         var car = null;
@@ -313,7 +315,7 @@
         var cleanPhone = ph.replace(/[^0-9]/g, '');
         if (cleanPhone.length === 10 && !cleanPhone.startsWith("52")) { cleanPhone = "52" + cleanPhone; }
 
-        var list = getLocalData("legadoStorageFinalV45");
+        var list = getLocalData("legadoStorageFinalV50");
         if (editingOrderId !== null) {
             for (var i = 0; i < list.length; i++) {
                 if (list[i].id === editingOrderId) {
@@ -326,12 +328,12 @@
         } else {
             list.push({ id: Date.now(), plates: p, brand: b, model: m, year: y, color: c, km: k, vin: v, owner: o, phone: cleanPhone, fault: f, status: s, carPhotos: tempCarPhotos });
         }
-        localStorage.setItem("legadoStorageFinalV45", JSON.stringify(list));
+        localStorage.setItem("legadoStorageFinalV50", JSON.stringify(list));
         document.getElementById("orderForm").reset(); tempCarPhotos = []; displayOrders(); updateVehicleDropdown(); syncToCloud();
     }
 
     function editOrder(id) {
-        var list = getLocalData("legadoStorageFinalV45"); var car = null;
+        var list = getLocalData("legadoStorageFinalV50"); var car = null;
         for (var i = 0; i < list.length; i++) { if (list[i].id === id) { car = list[i]; break; } }
         if (!car) return;
         
@@ -349,13 +351,13 @@
 <script>
     function deleteOrder(id) {
         if(confirm("¿ELIMINAR permanentemente esta orden?")) {
-            var filtered = getLocalData("legadoStorageFinalV45").filter(function(x) { return x.id !== id; });
-            localStorage.setItem("legadoStorageFinalV45", JSON.stringify(filtered)); displayOrders(); updateVehicleDropdown(); syncToCloud();
+            var filtered = getLocalData("legadoStorageFinalV50").filter(function(x) { return x.id !== id; });
+            localStorage.setItem("legadoStorageFinalV50", JSON.stringify(filtered)); displayOrders(); updateVehicleDropdown(); syncToCloud();
         }
     }
 
     function printSingleOrder(id) {
-        var list = getLocalData("legadoStorageFinalV45"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
+        var list = getLocalData("legadoStorageFinalV50"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
         var textStatus = (car.status === 'Revision') ? '🔴 En revisión' : (car.status === 'Proceso') ? '🟡 En proceso' : (car.status === 'Terminado') ? '🟢 Terminado' : car.status;
 
         var printWindow = window.open('', '_blank');
@@ -378,7 +380,7 @@
 <script>
     function displayOrders() {
         var tbody = document.getElementById("ordersTableBody"); if(!tbody) return; tbody.innerHTML = "";
-        var list = getLocalData("legadoStorageFinalV45");
+        var list = getLocalData("legadoStorageFinalV50");
         var filteredList = list.filter(function(item) { return currentView === 'activos' ? item.status !== 'Entregado' : item.status === 'Entregado'; });
         if (filteredList.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No hay registros.</td></tr>'; return; }
         
@@ -405,15 +407,15 @@
     }
 
     function updateStatus(id, newStatus) {
-        var list = getLocalData("legadoStorageFinalV45");
+        var list = getLocalData("legadoStorageFinalV50");
         for (var i = 0; i < list.length; i++) { if (list[i].id === id) { list[i].status = newStatus; break; } }
-        localStorage.setItem("legadoStorageFinalV45", JSON.stringify(list)); displayOrders(); syncToCloud();
+        localStorage.setItem("legadoStorageFinalV50", JSON.stringify(list)); displayOrders(); syncToCloud();
     }
     function deliverVehicle(id) {
         if(confirm("¿Mover este auto al historial de entregados?")) {
-            var list = getLocalData("legadoStorageFinalV45");
+            var list = getLocalData("legadoStorageFinalV50");
             for (var i = 0; i < list.length; i++) { if (list[i].id === id) { list[i].status = 'Entregado'; break; } }
-            localStorage.setItem("legadoStorageFinalV45", JSON.stringify(list)); displayOrders(); updateVehicleDropdown(); syncToCloud();
+            localStorage.setItem("legadoStorageFinalV50", JSON.stringify(list)); displayOrders(); updateVehicleDropdown(); syncToCloud();
         }
     }
 </script>
@@ -469,7 +471,7 @@
     function triggerImageUpload(quoteId) { activeQuoteIdForUpload = quoteId; document.getElementById("hiddenFileInput").click(); }
     
     function handleFileSelected(input) {
-        if (!input.files || !input.files[0]) return;
+        if (!input.files || input.files.length === 0) return;
         var reader = new FileReader();
         reader.onload = function(e) {
             var img = new Image();
@@ -501,7 +503,17 @@
         for(var i = 0; i < quotes.length; i++) {
             var q = quotes[i]; var tr = document.createElement("tr");
             var selectStatusHtml = '<select class="table-select" onchange="updateQuoteStatus(' + q.id + ', this.value)"><option value="Pendiente"' + (q.quoteStatus === 'Pendiente' ? ' selected' : '') + '>🟡 Pendiente</option><option value="Aceptado"' + (q.quoteStatus === 'Aceptado' ? ' selected' : '') + '>🟢 Aceptado</option><option value="Rechazado"' + (q.quoteStatus === 'Rechazado' ? ' selected' : '') + '>⚪ Rechazado</option></select>';
-            var evidenceHtml = q.imageEvidence ? '<img src="' + q.imageEvidence + '" class="img-preview" onclick="openLargeImage(this.src)">' : (q.quoteStatus === 'Aceptado' ? '<button type="button" class="accept-btn" onclick="triggerImageUpload(' + q.id + ')">➕ Adjuntar Captura</button>' : '<span style="color:#64748b; font-size:12px;">Requiere ser Aceptado</span>');
+            
+            // LOGICA DE VISOR ACTUALIZADA: Si ya hay foto, dibuja una miniatura clicable. Si no hay y está Aceptado, muestra el botón para adjuntar.
+            var evidenceHtml = '';
+            if (q.imageEvidence) {
+                evidenceHtml = '<img src="' + q.imageEvidence + '" class="img-preview" style="max-width:50px; max-height:35px; border-radius:4px; cursor:pointer;" onclick="openLargeImage(this.src)" title="Haga clic para ampliar evidencia">';
+            } else if (q.quoteStatus === 'Aceptado') {
+                evidenceHtml = '<button type="button" class="accept-btn" onclick="triggerImageUpload(' + q.id + ')">➕ Adjuntar Evidencia</button>';
+            } else {
+                evidenceHtml = '<span style="color:#64748b; font-size:12px;">Requiere ser Aceptado</span>';
+            }
+
             tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + q.subtotal.toFixed(2) + '</td><td>$' + q.iva.toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + q.total.toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Reenviar WhatsApp</button><button type="button" class="btn-print" onclick="printSingleQuote(' + q.id + ')">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
             tbody.appendChild(tr);
         }
@@ -544,3 +556,5 @@
         var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_Legado.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); 
     }
 </script>
+</body>
+</html>
