@@ -498,33 +498,38 @@
         var quotes = getLocalData("legadoQuotesFinalV45"); var q = quotes.find(function(x) { return x.id == id; }); if (!q) return;
         var w = window.open('', '_blank'); w.document.write('<html><head><title>Presupuesto</title><style>body{font-family:sans-serif;padding:25px;color:#000;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:20px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;} .box{border:1px solid #000;padding:12px;border-radius:6px;margin-bottom:15px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:13px;} .total-box{text-align:right;font-size:15px;line-height:1.6;}</style></head><body><div class="header"><h1>💰 CO-TIZACIÓN DE SERVICIO</h1><p>Presupuesto Técnico Financiero</p></div><div class="grid"><div><div class="title">Cliente:</div><b>Nombre:</b> ' + q.owner + '</div><div><div class="title">Vehículo:</div><b>Placas:</b> ' + q.plates + '<br><b>Unidad:</b> ' + q.vehicle + '</div></div><div class="box"><div class="title">Trabajo:</div><p style="margin:0; white-space:pre-wrap;">' + q.service + '</p></div><div class="total-box"><b>Subtotal:</b> $' + q.subtotal.toFixed(2) + '<br><b>IVA (16%):</b> $' + q.iva.toFixed(2) + '<br><span style="font-size:18px;color:#10b981;"><b>TOTAL NETO:</b> $' + q.total.toFixed(2) + '</span></div></body></html>'); w.document.close(); w.focus(); setTimeout(function(){ w.print(); w.close(); }, 500);
     }
-
+</script>
+<!-- BLOQUE 17 -->
+<script>
     function updateQuoteStatus(id, newStatus) { var quotes = getLocalData("legadoQuotesFinalV45"); for(var i = 0; i < quotes.length; i++) { if(quotes[i].id === id) { quotes[i].quoteStatus = newStatus; break; } } localStorage.setItem("legadoQuotesFinalV45", JSON.stringify(quotes)); displayQuotes(); syncToCloud(); }
     
     function editQuote(id) { var quotes = getLocalData("legadoQuotesFinalV45"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return; var car = getLocalData("legadoStorageFinalV45").find(function(c) { return c.plates === q.plates; }); if(car) { document.getElementById("quoteSelectVehicle").value = car.id; autoFillQuoteData(); document.getElementById("quoteService").value = q.service; document.getElementById("costParts").value = q.parts || 0; document.getElementById("costLabor").value = q.labor || 0; calculateQuoteTotal(); editingQuoteId = q.id; document.getElementById("btnSaveQuote").textContent = "💾 Actualizar e Informar por WhatsApp"; window.scrollTo({ top: 0, behavior: 'smooth' }); } else { alert("Vehículo inactivo."); } }
     
-    // CORRECCIÓN DEFINITIVA DE WHATSAPP: Busca el teléfono de la bitácora mediante las placas para garantizar que se envíe sin errores
     function resendQuoteWhatsApp(id) { 
-        var quotes = getLocalData("legadoQuotesFinalV45"); 
-        var q = quotes.find(function(x) { return x.id == id; }); 
-        if(!q) return; 
-        
-        var carList = getLocalData("legadoStorageFinalV45");
-        var matchedCar = carList.find(function(c) { return c.plates === q.plates; });
+        var quotes = getLocalData("legadoQuotesFinalV45"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return; 
+        var carList = getLocalData("legadoStorageFinalV45"); var matchedCar = carList.find(function(c) { return c.plates === q.plates; });
         var targetPhone = matchedCar ? matchedCar.phone : q.phone;
-
-        if(!targetPhone) {
-            alert("No se localizó el teléfono del cliente para este auto.");
-            return;
-        }
-
-        var msgQuote = "Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n🧾 *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2);
-        window.open("https://wa.me/" + targetPhone + "?text=" + encodeURIComponent(msgQuote), '_blank'); 
+        if(!targetPhone) { alert("No se localizó el teléfono."); return; }
+        window.open("https://wa.me" + targetPhone + "?text=" + encodeURIComponent("Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n🧾 *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2)), '_blank'); 
     }
     
     function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { var filtered = getLocalData("legadoQuotesFinalV45").filter(function(q) { return q.id !== id; }); localStorage.setItem("legadoQuotesFinalV45", JSON.stringify(filtered)); displayQuotes(); syncToCloud(); } }
     function getLocalData(key) { try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : []; } catch(e) { return []; } }
     function filterOrders() { var q = document.getElementById("searchInput").value.toLowerCase(); var rows = document.querySelectorAll("#ordersTableBody tr"); rows.forEach(function(r) { if(r.cells.length < 2) return; if(r.textContent.toLowerCase().indexOf(q) > -1) { r.style.display = ""; } else { r.style.display = "none"; } }); }
-    function exportToExcel() { var list = getLocalData("legadoStorageFinalV45"); if (list.length === 0) { alert("No hay datos."); return; } var csv = "\uFEFFPlacas;Marca;Modelo;Año;Color;Kilometraje;VIN;Cliente;Telefono;Falla;Estado\n"; for (var i = 0; i < list.length; i++) { var o = list[i]; csv += '"' + o.plates + '";"' + o.brand + '";"' + o.model + '";"' + o.year + '";"' + o.color + '";"' + o.km + '";"' + o.vin + '";"' + o.owner + '";"' + o.phone + '";"' + o.fault + '";"' + o.status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Bitacora_Legado_Completa.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
-    function exportQuotesToExcel() { var list = getLocalData("legadoQuotesFinalV45"); if (list.length === 0) { alert("No hay cotizaciones para exportar."); return; } var csv = "\uFEFFPlacas;Cliente;Servicio;Subtotal;IVA_16;Total_Neto;Estatus\n"; for (var i = 0; i < list.length; i++) { var q = list[i]; csv += '"' + q.plates + '";"' + q.owner + '";"' + q.service + '";"' + q.subtotal.toFixed(2) + '";"' + q.iva.toFixed(2) + '";"' + q.total.toFixed(2) + '";"' + q.quoteStatus + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_Legado.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
+    
+    function exportToExcel() { 
+        var list = getLocalData("legadoStorageFinalV45"); if (list.length === 0) { alert("No hay datos."); return; } 
+        var csv = "\uFEFFPlacas,Marca,Modelo,Año,Color,Kilometraje,VIN,Cliente,Telefono,Falla,Estado\n"; 
+        for (var i = 0; i < list.length; i++) { var o = list[i]; var cleanFault = o.fault.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + o.plates + '","' + o.brand + '","' + o.model + '","' + o.year + '","' + o.color + '","' + o.km + '","' + o.vin + '","' + o.owner + '","' + o.phone + '","' + cleanFault + '","' + o.status + '"\n'; } 
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Bitacora_Legado_Completa.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); 
+    }
+    
+    function exportQuotesToExcel() { 
+        var list = getLocalData("legadoQuotesFinalV45"); if (list.length === 0) { alert("No hay cotizaciones para exportar."); return; } 
+        var csv = "\uFEFFPlacas,Cliente,Servicio,Subtotal,IVA_16,Total_Neto,Estatus\n"; 
+        for (var i = 0; i < list.length; i++) { var q = list[i]; var cleanService = q.service.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + q.plates + '","' + q.owner + '","' + cleanService + '","' + q.subtotal.toFixed(2) + '","' + q.iva.toFixed(2) + '","' + q.total.toFixed(2) + '","' + q.quoteStatus + '"\n'; } 
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_Legado.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); 
+    }
 </script>
+</body>
+</html>
