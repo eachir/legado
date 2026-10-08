@@ -70,6 +70,20 @@
         .img-preview { max-width: 60px; max-height: 40px; border-radius: 4px; cursor: pointer; border: 1px solid #475569; }
         .img-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 9999; }
         .img-modal img { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+
+        @media print {
+            body { background: white; color: black; padding: 0; margin: 0; }
+            .container { box-shadow: none; background: white; padding: 0; max-width: 100%; }
+            h1 { color: black !important; font-size: 20px; margin-bottom: 10px; }
+            .cloud-panel, .main-nav, #orderForm, #quoteForm, .tabs-container, .table-tools, h2 { display: none !important; }
+            table { width: 100% !important; min-width: 100% !important; border: 1px solid black !important; page-break-inside: avoid; }
+            th, td { color: black !important; background: transparent !important; border: 1px solid black !important; padding: 8px !important; font-size: 12px !important; }
+            th:last-child, td:last-child { display: none !important; }
+            .row-blocked { opacity: 1 !important; }
+            #screenOrders.active ~ #screenQuotes, #screenQuotes { display: none !important; }
+            #screenOrders { display: none !important; }
+            #screenQuotes.active { display: block !important; }
+        }
     </style>
 </head>
 <!-- BLOQUE 4 -->
@@ -77,7 +91,7 @@
 <div class="container">
     <h1>🔧 Taller Mecánico Legado</h1>
     
-    <!-- Blindaje de Seguridad: display:none mantiene oculta la URL ante mecánicos -->
+    <!-- Blindaje de Seguridad: El "display:none" mantiene oculta la URL frente a mecánicos -->
     <div class="cloud-panel" style="display:none;" id="cloudPanelContainer">
         <label style="color: #38bdf8; font-weight: bold;">🌐 Sincronización Multiplataforma (Google Sheets URL):</label>
         <input type="text" id="cloudUrlInput" placeholder="Pega tu enlace de Google Apps Script que termina en /exec..." onchange="saveCloudUrl()">
@@ -87,7 +101,7 @@
         <button id="navOrders" class="nav-btn active" onclick="showScreen('orders')">📋 Órdenes de Servicio</button>
         <button id="navQuotes" class="nav-btn" onclick="showScreen('quotes')">💰 Cotizador de Servicios</button>
     </div>
-    <!-- BLOQUE 5 -->
+<!-- BLOQUE 5 -->
     <!-- PANTALLA 1: BITÁCORA -->
     <div id="screenOrders" class="screen active">
         <h2>Registrar Nueva Orden de Servicio</h2>
@@ -114,7 +128,6 @@
             </div>
             <button type="button" class="btn-primary" id="btnSaveOrder" onclick="saveOrder()">Guardar en Bitácora</button>
         </form>
-
 <!-- BLOQUE 6 -->
         <h2>Bitácora de Monitoreo</h2>
         <div class="tabs-container">
@@ -219,7 +232,7 @@
             if (cloudData.quotes) localStorage.setItem("legadoQuotesFinalV45", JSON.stringify(cloudData.quotes));
             displayOrders(); displayQuotes(); updateVehicleDropdown();
         })
-        .catch(function(err) { console.log("Modo offline."); });
+        .catch(function(err) { console.log("Modo offline activo."); });
     }
 
     function syncToCloud() {
@@ -510,7 +523,7 @@
         var carList = getLocalData("legadoStorageFinalV45"); var matchedCar = carList.find(function(c) { return c.plates === q.plates; });
         var targetPhone = matchedCar ? matchedCar.phone : q.phone;
         if(!targetPhone) { alert("No se localizó el teléfono."); return; }
-        window.open("https://wa.me" + targetPhone + "?text=" + encodeURIComponent("Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n🧾 *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2)), '_blank'); 
+        window.open("https://wa.me/" + targetPhone + "?text=" + encodeURIComponent("Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n🧾 *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2)), '_blank'); 
     }
     
     function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { var filtered = getLocalData("legadoQuotesFinalV45").filter(function(q) { return q.id !== id; }); localStorage.setItem("legadoQuotesFinalV45", JSON.stringify(filtered)); displayQuotes(); syncToCloud(); } }
@@ -531,5 +544,3 @@
         var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_Legado.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); 
     }
 </script>
-</body>
-</html>
