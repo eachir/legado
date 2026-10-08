@@ -289,7 +289,10 @@
         var f = document.getElementById("fault").value.trim().toUpperCase();
         var s = document.getElementById("status").value;
 
-        if (!p || !b || !m || !y || !c || !k || !v || !o || !ph || !f) { alert("Completa todos los campos obligatorios."); return; }
+        if (!p || !b || !m || !y || !c || !k || !v || !o || !ph || !f) { 
+            alert("Por favor completa todos los campos obligatorios."); 
+            return; 
+        }
         var cleanPhone = ph.replace(/[^0-9]/g, '');
         if (cleanPhone.length === 10 && !cleanPhone.startsWith("52")) { cleanPhone = "52" + cleanPhone; }
 
@@ -299,28 +302,49 @@
                 if (list[i].id === editingOrderId) {
                     list[i].plates = p; list[i].brand = b; list[i].model = m; list[i].year = y; list[i].color = c;
                     list[i].km = k; list[i].vin = v; list[i].owner = o; list[i].phone = cleanPhone; list[i].fault = f; list[i].status = s;
-                    if(tempCarPhotos.length > 0) list[i].carPhotos = tempCarPhotos; break;
+                    if(tempCarPhotos.length > 0) list[i].carPhotos = tempCarPhotos; 
+                    break;
                 }
             }
-            editingOrderId = null; document.getElementById("btnSaveOrder").textContent = "Guardar en Bitácora";
+            editingOrderId = null; 
+            document.getElementById("btnSaveOrder").textContent = "Guardar en Bitácora";
         } else {
             list.push({ id: Date.now(), plates: p, brand: b, model: m, year: y, color: c, km: k, vin: v, owner: o, phone: cleanPhone, fault: f, status: s, carPhotos: tempCarPhotos });
         }
         localStorage.setItem("legadoStorageFinalV42", JSON.stringify(list));
-        document.getElementById("orderForm").reset(); tempCarPhotos = []; displayOrders(); updateVehicleDropdown(); syncToCloud();
+        document.getElementById("orderForm").reset(); 
+        tempCarPhotos = []; 
+        displayOrders(); 
+        updateVehicleDropdown(); 
+        syncToCloud();
     }
 
     function editOrder(id) {
-        var list = getLocalData("legadoStorageFinalV42"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
-        document.getElementById("plates").value = car.plates; document.getElementById("brand").value = car.brand;
-        document.getElementById("model").value = car.model; document.getElementById("year").value = car.year;
-        document.getElementById("color").value = car.color; document.getElementById("km").value = car.km;
-        document.getElementById("vin").value = car.vin; document.getElementById("owner").value = car.owner;
-        document.getElementById("phone").value = car.phone.replace(/^52/, ''); document.getElementById("status").value = car.status; document.getElementById("fault").value = car.fault;
-        editingOrderId = car.id; document.getElementById("btnSaveOrder").textContent = "💾 Actualizar Orden de Trabajo";
+        var list = getLocalData("legadoStorageFinalV42"); 
+        var car = null;
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].id === id) { car = list[i]; break; }
+        }
+        if (!car) return;
+        
+        document.getElementById("plates").value = car.plates; 
+        document.getElementById("brand").value = car.brand;
+        document.getElementById("model").value = car.model; 
+        document.getElementById("year").value = car.year;
+        document.getElementById("color").value = car.color; 
+        document.getElementById("km").value = car.km;
+        document.getElementById("vin").value = car.vin; 
+        document.getElementById("owner").value = car.owner;
+        document.getElementById("phone").value = car.phone.replace(/^52/, ''); 
+        document.getElementById("status").value = car.status; 
+        document.getElementById("fault").value = car.fault;
+        
+        editingOrderId = car.id; 
+        document.getElementById("btnSaveOrder").textContent = "💾 Actualizar Orden de Trabajo";
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
+
 <!-- BLOQUE 13 -->
 <script>
     function deleteOrder(id) {
