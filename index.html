@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taller Mecanico Legado Cloud</title>
+    <title>Taller Mecanico Legado Realtime</title>
+    <!-- Conector oficial de Supabase para transmisiones fluidas e instantaneas -->
+    <script src="https://jsdelivr.net"></script>
     <link rel="icon" type="image/png" href="https://unsplash.com">
     <link rel="apple-touch-icon" href="https://unsplash.com">
     <style>
@@ -13,9 +15,14 @@
         .container { max-width: 1350px; margin: auto; background: #1e293b; padding: 30px; border-radius: 12px; }
         h1 { text-align: center; color: #38bdf8; margin-top: 0; text-transform: uppercase; }
         h2 { color: #e2e8f0; border-bottom: 2px solid #334155; padding-bottom: 8px; }
-        
-        .cloud-panel { background: #0f172a; padding: 15px; border-radius: 8px; border-left: 5px solid #38bdf8; margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
-        .cloud-panel input { width: 100%; background: #1e293b; padding: 8px; border: 1px solid #475569; border-radius: 4px; color: #38bdf8; font-size: 13px; font-family: monospace; }
+    </style>
+</head>
+<!-- BLOQUE 2 -->
+<head>
+    <style>
+        .cloud-panel { background: #0f172a; padding: 15px; border-radius: 8px; border-left: 5px solid #10b981; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .cloud-group { display: flex; flex-direction: column; gap: 5px; }
+        .cloud-panel input { width: 100%; background: #1e293b; padding: 8px; border: 1px solid #475569; border-radius: 4px; color: #10b981; font-size: 13px; font-family: monospace; }
         
         .main-nav { display: flex; gap: 15px; justify-content: center; margin-bottom: 25px; border-bottom: 3px solid #334155; padding-bottom: 15px; }
         .nav-btn { background-color: #334155; color: #cbd5e1; border: none; padding: 12px 24px; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 16px; }
@@ -24,7 +31,7 @@
         .screen.active { display: block; }
     </style>
 </head>
-<!-- BLOQUE 2 -->
+<!-- BLOQUE 3 -->
 <head>
     <style>
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
@@ -37,22 +44,26 @@
         .btn-primary { background-color: #38bdf8; color: #0f172a; border: none; font-weight: bold; padding: 12px; border-radius: 6px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 15px; }
         .btn-excel { background-color: #10b981; color: white; border: none; font-weight: bold; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
         .btn-print { background-color: #6366f1; color: white; border: none; font-weight: bold; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        
+    </style>
+</head>
+<!-- BLOQUE 4 -->
+<head>
+    <style>
         .tabs-container { display: flex; gap: 10px; margin-top: 20px; }
         .tab-btn { background-color: #334155; color: #94a3b8; border: none; padding: 10px 20px; font-weight: bold; border-radius: 6px 6px 0 0; cursor: pointer; font-size: 14px; }
         .tab-btn.active { background-color: #0f172a; color: #38bdf8; border-bottom: 2px solid #38bdf8; }
-    </style>
-</head>
-<!-- BLOQUE 3 -->
-<head>
-    <style>
+        
         .table-tools { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; background: #0f172a; padding: 15px; margin: 0; }
         .search-box { width: 300px; }
         .table-container { overflow-x: auto; background: #0f172a; border-radius: 0 0 8px 8px; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 1200px; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #334155; }
         th { background-color: #1e293b; color: #38bdf8; }
-        
+    </style>
+</head>
+<!-- BLOQUE 5 -->
+<head>
+    <style>
         .table-select { padding: 5px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer; }
         .sel-Revision { background-color: #ef4444; color: white; border: 1px solid #ef4444; }
         .sel-Proceso { background-color: #f59e0b; color: #0f172a; border: 1px solid #f59e0b; }
@@ -64,44 +75,35 @@
         .whats-link, .whats-resend-btn { background-color: #25d366; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold; font-size: 12px; margin-top: 5px; text-align: center; border: none; cursor: pointer; }
         .whats-resend-btn { margin-right: 5px; background-color: #128c7e; }
         .call-link { color: #38bdf8; text-decoration: none; font-weight: bold; display: block; }
-        .tax-box { font-size: 1.1rem; font-weight: bold; margin-top: 5px; padding: 8px; background: #0f172a; border-radius: 6px; }
         .actions-cell { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
         .accept-btn { background-color: #10b981; color: white; padding: 5px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
         .img-preview { max-width: 60px; max-height: 40px; border-radius: 4px; cursor: pointer; border: 1px solid #475569; }
         .img-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 9999; }
         .img-modal img { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-
-        @media print {
-            body { background: white; color: black; padding: 0; margin: 0; }
-            .container { box-shadow: none; background: white; padding: 0; max-width: 100%; }
-            h1 { color: black !important; font-size: 20px; margin-bottom: 10px; }
-            .cloud-panel, .main-nav, #orderForm, #quoteForm, .tabs-container, .table-tools, h2 { display: none !important; }
-            table { width: 100% !important; min-width: 100% !important; border: 1px solid black !important; page-break-inside: avoid; }
-            th, td { color: black !important; background: transparent !important; border: 1px solid black !important; padding: 8px !important; font-size: 12px !important; }
-            th:last-child, td:last-child { display: none !important; }
-            .row-blocked { opacity: 1 !important; }
-            #screenOrders.active ~ #screenQuotes, #screenQuotes { display: none !important; }
-            #screenOrders { display: none !important; }
-            #screenQuotes.active { display: block !important; }
-        }
     </style>
 </head>
-<!-- BLOQUE 4 -->
+<!-- BLOQUE 6 -->
 <body>
 <div class="container">
     <h1>🔧 Taller Mecánico Legado</h1>
     
-    <!-- TRUCO REINICIO: Muestra el recuadro para enlazar tu código PropertiesService de Google -->
+    <!-- PANEL DE ENLACE: Conectara tu front-end con tu base de datos SQL de Supabase -->
     <div class="cloud-panel" id="cloudPanelContainer">
-        <label style="color: #38bdf8; font-weight: bold;">🌐 Sincronización Multiplataforma (Google Sheets URL):</label>
-        <input type="text" id="cloudUrlInput" placeholder="Pega tu enlace de Google Apps Script que termina en /exec..." onchange="saveCloudUrl()">
+        <div class="cloud-group">
+            <label style="color: #10b981; font-weight: bold;">🌐 Supabase Project URL:</label>
+            <input type="text" id="supabaseUrlInput" placeholder="https://supabase.co" onchange="saveSupabaseCreds()">
+        </div>
+        <div class="cloud-group">
+            <label style="color: #10b981; font-weight: bold;">🔑 Supabase Anon API Key:</label>
+            <input type="text" id="supabaseKeyInput" placeholder="Pega tu Anon Public API Key larga..." onchange="saveSupabaseCreds()">
+        </div>
     </div>
 
     <div class="main-nav">
         <button id="navOrders" class="nav-btn active" onclick="showScreen('orders')">📋 Órdenes de Servicio</button>
         <button id="navQuotes" class="nav-btn" onclick="showScreen('quotes')">💰 Cotizador de Servicios</button>
     </div>
-<!-- BLOQUE 5 -->
+<!-- BLOQUE 7 -->
     <!-- PANTALLA 1: BITÁCORA -->
     <div id="screenOrders" class="screen active">
         <h2>Registrar Nueva Orden de Servicio</h2>
@@ -126,9 +128,9 @@
                 <div class="form-group full-width"><label>Falla reportada:</label><textarea id="fault" placeholder="Detalles..." rows="3" oninput="this.value = this.value.toUpperCase()"></textarea></div>
                 <div class="form-group full-width"><label style="color:#38bdf8;">📸 Fotos de Recepción (Máx 4 imágenes):</label><input type="file" id="carPhotosInput" accept="image/*" multiple onchange="processCarPhotos(this)"></div>
             </div>
-            <button type="button" class="btn-primary" id="btnSaveOrder" onclick="saveOrder()">Guardar en Bitácora</button>
+            <button type="button" class="btn-primary" id="btnSaveOrder" onclick="saveOrder()">Guardar en Bitácora Realtime</button>
         </form>
-<!-- BLOQUE 6 -->
+<!-- BLOQUE 8 -->
         <h2>Bitácora de Monitoreo</h2>
         <div class="tabs-container">
             <button id="tabActivos" class="tab-btn active" onclick="switchTab('activos')">🚗 En Taller (Activos)</button>
@@ -147,7 +149,7 @@
             </table>
         </div>
     </div>
-<!-- BLOQUE 7 -->
+<!-- BLOQUE 9 -->
     <!-- PANTALLA 2: COTIZADOR -->
     <div id="screenQuotes" class="screen">
         <h2>Generar Presupuesto / Cotización (IVA 16%)</h2>
@@ -166,7 +168,7 @@
             </div>
             <button type="button" class="btn-primary" id="btnSaveQuote" style="background-color: #10b981; color: white;" onclick="saveQuote()">Guardar y Enviar Presupuesto</button>
         </form>
-<!-- BLOQUE 8 -->
+<!-- BLOQUE 10 -->
         <h2>Historial de Cotizaciones Generadas</h2>
         <div style="background: #0f172a; padding: 10px; text-align: right;">
             <button type="button" class="btn-excel" onclick="exportQuotesToExcel()">📊 Exportar Cotizaciones a Excel</button>
@@ -184,134 +186,36 @@
 
 <div id="imageModal" class="img-modal" onclick="this.style.display='none'"><img id="modalImgSrc" src=""></div>
 <input type="file" id="hiddenFileInput" accept="image/*" style="display:none;" onchange="handleFileSelected(this)">
-<!-- BLOQUE 9 -->
-<script>
-    var currentView = 'activos';
-    var activeQuoteIdForUpload = null;
-    var editingOrderId = null; 
-    var editingQuoteId = null;
-    var cloudUrl = "";
-
-    window.addEventListener('load', function() { 
-        cloudUrl = localStorage.getItem("legadoCloudUrl") || "";
-        document.getElementById("cloudUrlInput").value = cloudUrl;
-        
-        // Bloqueo de seguridad dinámico
-        if(cloudUrl) { document.getElementById("cloudPanelContainer").style.display = "none"; }
-        loadAllData();
-    });
-
-    function saveCloudUrl() {
-        cloudUrl = document.getElementById("cloudUrlInput").value.trim();
-        localStorage.setItem("legadoCloudUrl", cloudUrl);
-        if(cloudUrl) document.getElementById("cloudPanelContainer").style.display = "none";
-        loadAllData();
-    }
-
-    function showScreen(name) {
-        document.getElementById("screenOrders").style.display = (name === 'orders') ? "block" : "none";
-        document.getElementById("screenQuotes").style.display = (name === 'quotes') ? "block" : "none";
-        document.getElementById("navOrders").className = (name === 'orders') ? "nav-btn active" : "nav-btn";
-        document.getElementById("navQuotes").className = (name === 'quotes') ? "nav-btn active" : "nav-btn";
-        if(name === 'quotes') { updateVehicleDropdown(); }
-    }
-</script>
-<!-- BLOQUE 10 -->
-<script>
-    function switchTab(view) {
-        currentView = view;
-        document.getElementById("tabActivos").className = (view === 'activos') ? "tab-btn active" : "tab-btn";
-        document.getElementById("tabHistorial").className = (view === 'historial') ? "tab-btn active" : "tab-btn";
-        displayOrders();
-    }
-
-    function loadAllData() {
-        // Carga inmediata local para que el celular nunca se quede en blanco
-        displayOrders(); 
-        displayQuotes(); 
-        updateVehicleDropdown(); 
-        
-        if (!cloudUrl) return;
-
-        fetch(cloudUrl + "?action=read")
-        .then(function(res) { return res.json(); })
-        .then(function(cloudData) {
-            if (cloudData.orders && cloudData.orders.length > 0) { 
-                localStorage.setItem("legadoStorageFinalV50", JSON.stringify(cloudData.orders)); 
-            }
-            if (cloudData.quotes && cloudData.quotes.length > 0) { 
-                localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(cloudData.quotes)); 
-            }
-            displayOrders(); 
-            displayQuotes(); 
-            updateVehicleDropdown();
-        })
-        .catch(function(err) { console.log("Carga local activa."); });
-    }
-
-    // TRANSMISIÓN MAESTRA BLINDADA PARA CELULARES
-    function syncToCloud() {
-        if (!cloudUrl) return;
-        var orders = getLocalData("legadoStorageFinalV50");
-        var quotes = getLocalData("legadoQuotesFinalV50");
-        var payload = { orders: orders, quotes: quotes };
-
-        // Forzamos el envío plano liberando las restricciones de Chrome Móvil
-        fetch(cloudUrl, {
-            method: "POST",
-            mode: "no-cors", // <-- Evita que el celular rechace el envío cruzado
-            headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify(payload)
-        })
-        .then(function() { console.log("✓ Sincronizado fijos."); })
-        .catch(function(err) { console.error("Error transmisión:", err); });
-    }
-</script>
-
 <!-- BLOQUE 11 -->
 <script>
-    var tempCarPhotos = [];
+    var supabaseUrl = "";
+    var supabaseKey = "";
+    var _supabase = null;
 
-    function processCarPhotos(input) {
-        if (!input.files || input.files.length === 0) return;
-        tempCarPhotos = [];
-        var filesList = Array.from(input.files).slice(0, 4);
-
-        filesList.forEach(function(file) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var img = new Image();
-                img.onload = function() {
-                    var canvas = document.createElement('canvas'); var ctx = canvas.getContext('2d');
-                    var maxWidth = 600; var maxHeight = 600; var width = img.width; var height = img.height;
-                    if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } } 
-                    else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
-                    canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height);
-                    tempCarPhotos.push(canvas.toDataURL('image/jpeg', 0.6));
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    function searchExistingVehicle() {
-        var inputPlates = document.getElementById("plates").value.trim().toUpperCase();
-        if (inputPlates === "") return;
-        var list = getLocalData("legadoStorageFinalV50");
-        if (list.length === 0) return;
+    window.addEventListener('load', function() { 
+        supabaseUrl = localStorage.getItem("legadoSupaUrl") || "";
+        supabaseKey = localStorage.getItem("legadoSupaKey") || "";
         
-        var car = null;
-        for (var i = 0; i < list.length; i++) {
-            if (list[i].plates === inputPlates) { car = list[i]; break; }
+        document.getElementById("supabaseUrlInput").value = supabaseUrl;
+        document.getElementById("supabaseKeyInput").value = supabaseKey;
+        
+        if (supabaseUrl && supabaseKey) {
+            _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            document.getElementById("cloudPanelContainer").style.display = "none";
+            loadAllData();
         }
+    });
+
+    function saveSupabaseCreds() {
+        supabaseUrl = document.getElementById("supabaseUrlInput").value.trim();
+        supabaseKey = document.getElementById("supabaseKeyInput").value.trim();
+        localStorage.setItem("legadoSupaUrl", supabaseUrl);
+        localStorage.setItem("legadoSupaKey", supabaseKey);
         
-        if (car) {
-            document.getElementById("brand").value = car.brand; document.getElementById("model").value = car.model;
-            document.getElementById("year").value = car.year; document.getElementById("color").value = car.color;
-            document.getElementById("vin").value = car.vin; document.getElementById("owner").value = car.owner;
-            document.getElementById("phone").value = car.phone.replace(/^52/, '');
-            alert("🚗 ¡Unidad recurrente identificada! Datos precargados.");
+        if (supabaseUrl && supabaseKey) {
+            _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            document.getElementById("cloudPanelContainer").style.display = "none";
+            loadAllData();
         }
     }
 </script>
@@ -334,25 +238,36 @@
         var cleanPhone = ph.replace(/[^0-9]/g, '');
         if (cleanPhone.length === 10 && !cleanPhone.startsWith("52")) { cleanPhone = "52" + cleanPhone; }
 
-        var list = getLocalData("legadoStorageFinalV50");
-        if (editingOrderId !== null) {
-            for (var i = 0; i < list.length; i++) {
-                if (list[i].id === editingOrderId) {
-                    list[i].plates = p; list[i].brand = b; list[i].model = m; list[i].year = y; list[i].color = c;
-                    list[i].km = k; list[i].vin = v; list[i].owner = o; list[i].phone = cleanPhone; list[i].fault = f; list[i].status = s;
-                    if(tempCarPhotos.length > 0) list[i].carPhotos = tempCarPhotos; break;
-                }
-            }
-            editingOrderId = null; document.getElementById("btnSaveOrder").textContent = "Guardar en Bitácora";
-        } else {
-            list.push({ id: Date.now(), plates: p, brand: b, model: m, year: y, color: c, km: k, vin: v, owner: o, phone: cleanPhone, fault: f, status: s, carPhotos: tempCarPhotos });
-        }
-        localStorage.setItem("legadoStorageFinalV50", JSON.stringify(list));
-        document.getElementById("orderForm").reset(); tempCarPhotos = []; displayOrders(); updateVehicleDropdown(); syncToCloud();
-    }
+        if (!_supabase) { alert("Por favor ingresa tus credenciales de Supabase arriba."); return; }
 
+        var rowData = { plates: p, brand: b, model: m, year: y, color: c, km: k, vin: v, owner: o, phone: cleanPhone, fault: f, status: s };
+        if(tempCarPhotos.length > 0) rowData.car_photos = tempCarPhotos;
+
+        if (editingOrderId !== null) {
+            _supabase.from('ordenes').update(rowData).eq('id', editingOrderId)
+            .then(function() { 
+                editingOrderId = null; 
+                document.getElementById("btnSaveOrder").textContent = "Guardar en Bitácora Realtime"; 
+                document.getElementById("orderForm").reset(); 
+                tempCarPhotos = []; 
+                loadAllData(); 
+            });
+        } else {
+            rowData.id = Date.now();
+            _supabase.from('ordenes').insert([rowData])
+            .then(function() { 
+                document.getElementById("orderForm").reset(); 
+                tempCarPhotos = []; 
+                loadAllData(); 
+            });
+        }
+    }
+</script>
+<!-- BLOQUE 13 -->
+<script>
     function editOrder(id) {
-        var list = getLocalData("legadoStorageFinalV50"); var car = null;
+        var list = getLocalData("legado_supa_orders"); 
+        var car = null;
         for (var i = 0; i < list.length; i++) { if (list[i].id === id) { car = list[i]; break; } }
         if (!car) return;
         
@@ -366,40 +281,56 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
-<!-- BLOQUE 13 -->
+<!-- BLOQUE 14 -->
 <script>
+    function updateStatus(id, newStatus) {
+        if (!_supabase) return;
+        _supabase.from('ordenes').update({ status: newStatus }).eq('id', id).then(function() { loadAllData(); });
+    }
+    
+    function deliverVehicle(id) {
+        if(confirm("¿Mover este auto al historial de entregados?")) {
+            if (!_supabase) return;
+            _supabase.from('ordenes').update({ status: 'Entregado' }).eq('id', id).then(function() { loadAllData(); });
+        }
+    }
+    
     function deleteOrder(id) {
         if(confirm("¿ELIMINAR permanentemente esta orden?")) {
-            var filtered = getLocalData("legadoStorageFinalV50").filter(function(x) { return x.id !== id; });
-            localStorage.setItem("legadoStorageFinalV50", JSON.stringify(filtered)); displayOrders(); updateVehicleDropdown(); syncToCloud();
+            if (!_supabase) return;
+            _supabase.from('ordenes').delete().eq('id', id).then(function() { loadAllData(); });
         }
-    }
-
-    function printSingleOrder(id) {
-        var list = getLocalData("legadoStorageFinalV50"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
-        var textStatus = (car.status === 'Revision') ? '🔴 En revisión' : (car.status === 'Proceso') ? '🟡 En proceso' : (car.status === 'Terminado') ? '🟢 Terminado' : car.status;
-
-        var printWindow = window.open('', '_blank');
-        printWindow.document.write('<html><head><title>Orden</title><style>body{font-family:sans-serif;padding:25px;color:#000;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:20px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;} .box{border:1px solid #000;padding:12px;border-radius:6px;margin-bottom:15px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:13px;} .photo-grid{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap;} .photo-grid img{width:120px;height:90px;object-fit:cover;border:1px solid #000;border-radius:4px;} .signature{margin-top:40px;display:flex;justify-content:space-around;} .line{border-top:1px solid #000;width:180px;text-align:center;padding-top:5px;font-size:11px;}</style></head><body>');
-        printWindow.document.write('<div class="header"><h1>🔧 TALLER MECÁNICO LEGADO</h1><p>Orden de Recepción Oficial</p></div><div class="grid">');
-        printWindow.document.write('<div><div class="title">Cliente:</div><b>Nombre:</b> ' + car.owner + '<br><b>Contacto:</b> +' + car.phone + '</div>');
-        printWindow.document.write('<div><div class="title">Vehículo:</div><b>Placas:</b> ' + car.plates + '<br><b>Unidad:</b> ' + car.brand + ' ' + car.model + ' (' + car.year + '/' + car.color + ')<br><b>KM:</b> ' + car.km + '</div></div>');
-        printWindow.document.write('<div class="box"><div class="title">Falla Reportada:</div><p style="margin:0; white-space:pre-wrap;">' + car.fault + '</p></div>');
-        if (car.carPhotos && car.carPhotos.length > 0) {
-            printWindow.document.write('<div class="box"><div class="title">Fotos de Recepción:</div><div class="photo-grid">');
-            car.carPhotos.forEach(function(src) { printWindow.document.write('<img src="' + src + '">'); });
-            printWindow.document.write('</div></div>');
-        }
-        printWindow.document.write('<div class="box"><b>Estado:</b> ' + textStatus + '</div><div class="signature"><div class="line">Firma Mecánico</div><div class="line">Firma Cliente</div></div></body></html>');
-        printWindow.document.close(); printWindow.focus();
-        setTimeout(function(){ printWindow.print(); printWindow.close(); }, 500);
     }
 </script>
-<!-- BLOQUE 14 -->
+<!-- BLOQUE 15 -->
+<script>
+    function printSingleOrder(id) {
+        var list = getLocalData("legado_supa_orders"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
+        var textStatus = (car.status === 'Revision') ? '🔴 En revisión' : (car.status === 'Proceso') ? '🟡 En proceso' : (car.status === 'Terminado') ? '🟢 Terminado' : car.status;
+        
+        var w = window.open('', '_blank'); 
+        w.document.write('<html><head><title>Orden</title><style>body{font-family:sans-serif;padding:25px;color:#000;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:20px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;} .box{border:1px solid #000;padding:12px;border-radius:6px;margin-bottom:15px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:13px;} .photo-grid{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap;} .photo-grid img{width:120px;height:90px;object-fit:cover;border:1px solid #000;border-radius:4px;} .signature{margin-top:40px;display:flex;justify-content:space-around;} .line{border-top:1px solid #000;width:180px;text-align:center;padding-top:5px;font-size:11px;}</style></head><body>');
+        w.document.write('<div class="header"><h1>🔧 TALLER MECÁNICO LEGADO</h1><p>Orden de Recepción Oficial Realtime</p></div><div class="grid">');
+        w.document.write('<div><div class="title">Cliente:</div><b>Nombre:</b> ' + car.owner + '<br><b>Contacto:</b> +' + car.phone + '</div>');
+        w.document.write('<div><div class="title">Vehículo:</div><b>Placas:</b> ' + car.plates + '<br><b>Unidad:</b> ' + car.brand + ' ' + car.model + ' (' + car.year + '/' + car.color + ')<br><b>KM:</b> ' + car.km + '</div></div>');
+        w.document.write('<div class="box"><div class="title">Falla Reportada:</div><p style="margin:0; white-space:pre-wrap;">' + car.fault + '</p></div>');
+        
+        if (car.car_photos && car.car_photos.length > 0) { 
+            w.document.write('<div class="box"><div class="title">Fotos de Recepción:</div><div class="photo-grid">'); 
+            car.car_photos.forEach(function(src) { w.document.write('<img src="' + src + '">'); }); 
+            w.document.write('</div></div>'); 
+        } 
+        
+        w.document.write('<div class="box"><b>Estado:</b> ' + textStatus + '</div><div class="signature"><div class="line">Firma Mecánico</div><div class="line">Firma Cliente</div></div></body></html>'); 
+        w.document.close(); w.focus(); 
+        setTimeout(function(){ w.print(); w.close(); }, 500);
+    }
+</script>
+<!-- BLOQUE 16 -->
 <script>
     function displayOrders() {
         var tbody = document.getElementById("ordersTableBody"); if(!tbody) return; tbody.innerHTML = "";
-        var list = getLocalData("legadoStorageFinalV50");
+        var list = getLocalData("legado_supa_orders");
         var filteredList = list.filter(function(item) { return currentView === 'activos' ? item.status !== 'Entregado' : item.status === 'Entregado'; });
         if (filteredList.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No hay registros.</td></tr>'; return; }
         
@@ -409,9 +340,9 @@
             if(item.status === 'Entregado') selectHtml = '<select class="table-select sel-Entregado" disabled><option>🔘 Entregado</option></select>';
 
             var photosHtml = '';
-            if (item.carPhotos && item.carPhotos.length > 0) {
+            if (item.car_photos && item.car_photos.length > 0) {
                 photosHtml = '<div style="display:flex; gap:3px; margin-top:5px;">';
-                item.carPhotos.forEach(function(src) { photosHtml += '<img src="' + src + '" class="img-preview" style="max-width:30px; max-height:20px;" onclick="openLargeImage(this.src)">'; });
+                item.car_photos.forEach(function(src) { photosHtml += '<img src="' + src + '" class="img-preview" style="max-width:30px; max-height:20px;" onclick="openLargeImage(this.src)">'; });
                 photosHtml += '</div>';
             }
 
@@ -420,37 +351,26 @@
             var editBtnHtml = item.status === 'Entregado' ? '' : '<button class="deliver-btn" style="background-color:#0284c7;" onclick="editOrder(' + item.id + ')">✏️ Editar</button>';
             var deleteBtnHtml = '<button class="deliver-btn" style="background:#ef4444;" onclick="deleteOrder(' + item.id + ')">Eliminar</button>';
 
-            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')' + photosHtml + '</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="https://wa.me/' + item.phone + '?text=' + encodeURIComponent("Hola " + item.owner + ", Taller Legado. Tu unidad [" + item.plates + "] está en: *" + textStatus + "*.") + '" target="_blank" class="whats-link">Enviar WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="printSingleOrder(' + item.id + ')">Imprimir</button></td>';
+            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')' + photosHtml + '</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="https://wa.me/' + item.phone + '?text=' + encodeURIComponent("Hola " + item.owner + ", Taller Legado. Tu unidad [" + item.plates + "] está en estado: *" + textStatus + "*.") + '" target="_blank" class="whats-link">WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="printSingleOrder(' + item.id + ')">Imprimir</button></td>';
             tbody.appendChild(tr);
         }
     }
 
-    function updateStatus(id, newStatus) {
-        var list = getLocalData("legadoStorageFinalV50");
-        for (var i = 0; i < list.length; i++) { if (list[i].id === id) { list[i].status = newStatus; break; } }
-        localStorage.setItem("legadoStorageFinalV50", JSON.stringify(list)); displayOrders(); syncToCloud();
-    }
-    function deliverVehicle(id) {
-        if(confirm("¿Mover este auto al historial de entregados?")) {
-            var list = getLocalData("legadoStorageFinalV50");
-            for (var i = 0; i < list.length; i++) { if (list[i].id === id) { list[i].status = 'Entregado'; break; } }
-            localStorage.setItem("legadoStorageFinalV50", JSON.stringify(list)); displayOrders(); updateVehicleDropdown(); syncToCloud();
-        }
-    }
-</script>
-<!-- BLOQUE 15 -->
-<script>
     function updateVehicleDropdown() {
         var select = document.getElementById("quoteSelectVehicle"); if(!select) return; select.innerHTML = '<option value="">-- Elige las placas --</option>';
-        getLocalData("legadoStorageFinalV50").filter(function(car) { return car.status !== 'Entregado'; }).forEach(function(car) {
+        getLocalData("legado_supa_orders").filter(function(car) { return car.status !== 'Entregado'; }).forEach(function(car) {
             var opt = document.createElement("option"); opt.value = car.id; opt.textContent = car.plates + " - " + car.brand + " " + car.model; select.appendChild(opt);
         });
     }
+    
     function autoFillQuoteData() {
         var carId = document.getElementById("quoteSelectVehicle").value; if (!carId) { document.getElementById("quoteOwner").value = ""; document.getElementById("quoteVehicle").value = ""; return; }
-        var car = getLocalData("legadoStorageFinalV50").find(function(x) { return x.id == carId; });
+        var car = getLocalData("legado_supa_orders").find(function(x) { return x.id == carId; });
         if(car) { document.getElementById("quoteOwner").value = car.owner; document.getElementById("quoteVehicle").value = car.brand + " " + car.model; }
     }
+</script>
+<!-- BLOQUE 17 -->
+<script>
     function calculateQuoteTotal() {
         var parts = parseFloat(document.getElementById("costParts").value) || 0;
         var labor = parseFloat(document.getElementById("costLabor").value) || 0;
@@ -459,39 +379,27 @@
         document.getElementById("ivaDisplay").textContent = "$" + iva.toFixed(2);
         document.getElementById("quoteTotalDisplay").textContent = "$" + total.toFixed(2);
     }
-    
-    // TRUCO UNIFICACIÓN V50: Guarda el dinero exactamente en la misma gaveta que lee el motor de la nube
+
     function saveQuote() {
         var carId = document.getElementById("quoteSelectVehicle").value;
         var service = document.getElementById("quoteService").value.trim().toUpperCase();
         var parts = parseFloat(document.getElementById("costParts").value) || 0;
         var labor = parseFloat(document.getElementById("costLabor").value) || 0;
-        if (!carId || !service) { alert("Completa los datos."); return; }
-        var car = getLocalData("legadoStorageFinalV50").find(function(x) { return x.id == carId; });
+        if (!carId || !service) { alert("Completa los datos obligatorios."); return; }
+        var car = getLocalData("legado_supa_orders").find(function(x) { return x.id == carId; });
         var subtotal = parts + labor; var iva = subtotal * 0.16; var total = subtotal + iva;
-        var quotesList = getLocalData("legadoQuotesFinalV50");
+
+        if (!_supabase) return;
+        var rowData = { plates: car.plates, owner: car.owner, phone: car.phone, vehicle: car.brand + " " + car.model, service: service, parts: parts, labor: labor, subtotal: subtotal, iva: iva, total: total, quote_status: "Pendiente" };
 
         if (editingQuoteId !== null) {
-            for (var i = 0; i < quotesList.length; i++) {
-                if (quotesList[i].id === editingQuoteId) {
-                    quotesList[i].service = service; quotesList[i].parts = parts; quotesList[i].labor = labor;
-                    quotesList[i].subtotal = subtotal; quotesList[i].iva = iva; quotesList[i].total = total; break;
-                }
-            }
-            var activeIdToSend = editingQuoteId; editingQuoteId = null; document.getElementById("btnSaveQuote").textContent = "Guardar y Enviar Presupuesto";
+            _supabase.from('cotizaciones').update(rowData).eq('id', editingQuoteId).then(function() { editingQuoteId = null; document.getElementById("btnSaveQuote").textContent = "Guardar y Enviar Presupuesto"; document.getElementById("quoteForm").reset(); calculateQuoteTotal(); loadAllData(); });
         } else {
-            var newQuote = { id: Date.now(), plates: car.plates, owner: car.owner, phone: car.phone, vehicle: car.brand + " " + car.model, service: service, subtotal: subtotal, iva: iva, total: total, imageEvidence: "", quoteStatus: "Pendiente" };
-            quotesList.push(newQuote); var activeIdToSend = newQuote.id;
+            rowData.id = Date.now();
+            _supabase.from('cotizaciones').insert([rowData]).then(function() { document.getElementById("quoteForm").reset(); calculateQuoteTotal(); loadAllData(); });
         }
-        
-        // Guarda los datos usando estrictamente la clave unificada V50
-        localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(quotesList));
-        document.getElementById("quoteForm").reset(); calculateQuoteTotal(); displayQuotes(); resendQuoteWhatsApp(activeIdToSend); syncToCloud();
     }
-</script>
 
-<!-- BLOQUE 16 -->
-<script>
     function triggerImageUpload(quoteId) { activeQuoteIdForUpload = quoteId; document.getElementById("hiddenFileInput").click(); }
     
     function handleFileSelected(input) {
@@ -505,16 +413,8 @@
                 if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } } 
                 else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
                 canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height);
-                
-                // CORRECCIÓN: Apunta estrictamente a la gaveta V50 unificada para que no se borre al dar refresh
-                var quotesList = getLocalData("legadoQuotesFinalV50");
-                for(var i = 0; i < quotesList.length; i++) { 
-                    if(quotesList[i].id === activeQuoteIdForUpload) { 
-                        quotesList[i].imageEvidence = canvas.toDataURL('image/jpeg', 0.7); 
-                        break; 
-                    } 
-                }
-                localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(quotesList)); displayQuotes(); syncToCloud();
+                var compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                if (_supabase) { _supabase.from('cotizaciones').update({ image_evidence: compressedBase64 }).eq('id', activeQuoteIdForUpload).then(function() { loadAllData(); }); }
             };
             img.src = e.target.result;
         };
@@ -523,61 +423,41 @@
 
     function displayQuotes() {
         var tbody = document.getElementById("quotesTableBody"); if(!tbody) return; tbody.innerHTML = "";
-        var quotes = getLocalData("legadoQuotesFinalV50");
+        var quotes = getLocalData("legado_supa_quotes");
         if(quotes.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:15px;">No hay cotizaciones.</td></tr>'; return; }
         for(var i = 0; i < quotes.length; i++) {
             var q = quotes[i]; var tr = document.createElement("tr");
-            var selectStatusHtml = '<select class="table-select" onchange="updateQuoteStatus(' + q.id + ', this.value)"><option value="Pendiente"' + (q.quoteStatus === 'Pendiente' ? ' selected' : '') + '>🟡 Pendiente</option><option value="Aceptado"' + (q.quoteStatus === 'Aceptado' ? ' selected' : '') + '>🟢 Aceptado</option><option value="Rechazado"' + (q.quoteStatus === 'Rechazado' ? ' selected' : '') + '>⚪ Rechazado</option></select>';
-            
-            var evidenceHtml = '';
-            if (q.imageEvidence) {
-                evidenceHtml = '<img src="' + q.imageEvidence + '" class="img-preview" style="max-width:50px; max-height:35px; border-radius:4px; cursor:pointer;" onclick="openLargeImage(this.src)" title="Evidencia Clicable">';
-            } else if (q.quoteStatus === 'Aceptado') {
-                evidenceHtml = '<button type="button" class="accept-btn" onclick="triggerImageUpload(' + q.id + ')">➕ Adjuntar Evidencia</button>';
-            } else {
-                evidenceHtml = '<span style="color:#64748b; font-size:12px;">Requiere ser Aceptado</span>';
-            }
-
-            tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + q.subtotal.toFixed(2) + '</td><td>$' + q.iva.toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + q.total.toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Reenviar WhatsApp</button><button type="button" class="btn-print" onclick="printSingleQuote(' + q.id + ')">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
+            var selectStatusHtml = '<select class="table-select" onchange="updateQuoteStatus(' + q.id + ', this.value)"><option value="Pendiente"' + (q.quote_status === 'Pendiente' ? ' selected' : '') + '>🟡 Pendiente</option><option value="Aceptado"' + (q.quote_status === 'Aceptado' ? ' selected' : '') + '>🟢 Aceptado</option><option value="Rechazado"' + (q.quote_status === 'Rechazado' ? ' selected' : '') + '>⚪ Rechazado</option></select>';
+            var evidenceHtml = q.image_evidence ? '<img src="' + q.image_evidence + '" class="img-preview" onclick="openLargeImage(this.src)">' : (q.quote_status === 'Aceptado' ? '<button type="button" class="accept-btn" onclick="triggerImageUpload(' + q.id + ')">➕ Adjuntar Evidencia</button>' : '<span style="color:#64748b; font-size:12px;">Requiere ser Aceptado</span>');
+            tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + Number(q.subtotal).toFixed(2) + '</td><td>$' + Number(q.iva).toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + Number(q.total).toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Reenviar WhatsApp</button><button type="button" class="btn-print" onclick="printSingleQuote(' + q.id + ')">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
             tbody.appendChild(tr);
         }
     }
-
-    function printSingleQuote(id) {
-        var quotes = getLocalData("legadoQuotesFinalV50"); var q = quotes.find(function(x) { return x.id == id; }); if (!q) return;
-        var w = window.open('', '_blank'); w.document.write('<html><head><title>Presupuesto</title><style>body{font-family:sans-serif;padding:25px;color:#000;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:20px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;} .box{border:1px solid #000;padding:12px;border-radius:6px;margin-bottom:15px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:13px;} .total-box{text-align:right;font-size:15px;line-height:1.6;}</style></head><body><div class="header"><h1>💰 CO-TIZACIÓN DE SERVICIO</h1><p>Presupuesto Técnico Financiero</p></div><div class="grid"><div><div class="title">Cliente:</div><b>Nombre:</b> ' + q.owner + '</div><div><div class="title">Vehículo:</div><b>Placas:</b> ' + q.plates + '<br><b>Unidad:</b> ' + q.vehicle + '</div></div><div class="box"><div class="title">Trabajo:</div><p style="margin:0; white-space:pre-wrap;">' + q.service + '</p></div><div class="total-box"><b>Subtotal:</b> $' + q.subtotal.toFixed(2) + '<br><b>IVA (16%):</b> $' + q.iva.toFixed(2) + '<br><span style="font-size:18px;color:#10b981;"><b>TOTAL NETO:</b> $' + q.total.toFixed(2) + '</span></div></body></html>'); w.document.close(); w.focus(); setTimeout(function(){ w.print(); w.close(); }, 500);
-    }
 </script>
-
-<!-- BLOQUE 17 -->
+<!-- BLOQUE 18 -->
 <script>
-    function updateQuoteStatus(id, newStatus) { var quotes = getLocalData("legadoQuotesFinalV50"); for(var i = 0; i < quotes.length; i++) { if(quotes[i].id === id) { quotes[i].quoteStatus = newStatus; break; } } localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(quotes)); displayQuotes(); syncToCloud(); }
-    
-    function editQuote(id) { var quotes = getLocalData("legadoQuotesFinalV50"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return; var car = getLocalData("legadoStorageFinalV50").find(function(c) { return c.plates === q.plates; }); if(car) { document.getElementById("quoteSelectVehicle").value = car.id; autoFillQuoteData(); document.getElementById("quoteService").value = q.service; document.getElementById("costParts").value = q.parts || 0; document.getElementById("costLabor").value = q.labor || 0; calculateQuoteTotal(); editingQuoteId = q.id; document.getElementById("btnSaveQuote").textContent = "💾 Actualizar e Informar por WhatsApp"; window.scrollTo({ top: 0, behavior: 'smooth' }); } else { alert("Vehículo inactivo."); } }
-    
-    function resendQuoteWhatsApp(id) { 
-        var quotes = getLocalData("legadoQuotesFinalV50"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return; 
-        var carList = getLocalData("legadoStorageFinalV50"); var matchedCar = carList.find(function(c) { return c.plates === q.plates; });
-        var targetPhone = matchedCar ? matchedCar.phone : q.phone;
-        if(!targetPhone) { alert("No se localizó el teléfono."); return; }
-        window.open("https://wa.me/" + targetPhone + "?text=" + encodeURIComponent("Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n🧾 *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2)), '_blank'); 
+    function printSingleQuote(id) {
+        var quotes = getLocalData("legado_supa_quotes"); var q = quotes.find(function(x) { return x.id == id; }); if (!q) return;
+        var w = window.open('', '_blank'); w.document.write('<html><head><title>Presupuesto</title><style>body{font-family:sans-serif;padding:25px;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:20px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;} .box{border:1px solid #000;padding:12px;border-radius:6px;margin-bottom:15px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:13px;} .total-box{text-align:right;font-size:15px;line-height:1.6;}</style></head><body><div class="header"><h1>💰 CO-TIZACIÓN DE SERVICIO</h1><p>Presupuesto Técnico Financiero Realtime</p></div><div class="grid"><div><div class="title">Cliente:</div><b>Nombre:</b> ' + q.owner + '</div><div><div class="title">Vehículo:</div><b>Placas:</b> ' + q.plates + '<br><b>Unidad:</b> ' + q.vehicle + '</div></div><div class="box"><div class="title">Trabajo:</div><p style="margin:0; white-space:pre-wrap;">' + q.service + '</p></div><div class="total-box"><b>Subtotal:</b> $' + Number(q.subtotal).toFixed(2) + '<br><b>IVA (16%):</b> $' + Number(q.iva).toFixed(2) + '<br><span style="font-size:18px;color:#10b981;"><b>TOTAL NETO:</b> $' + Number(q.total).toFixed(2) + '</span></div></body></html>'); w.document.close(); w.focus(); setTimeout(function(){ w.print(); w.close(); }, 500);
     }
+
+    function updateQuoteStatus(id, newStatus) { if(_supabase) { _supabase.from('cotizaciones').update({ quote_status: newStatus }).eq('id', id).then(function() { loadAllData(); }); } }
     
-    function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { var filtered = getLocalData("legadoQuotesFinalV50").filter(function(q) { return q.id !== id; }); localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(filtered)); displayQuotes(); syncToCloud(); } }
+    function editQuote(id) { var quotes = getLocalData("legado_supa_quotes"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return; var car = getLocalData("legado_supa_orders").find(function(c) { return c.plates === q.plates; }); if(car) { document.getElementById("quoteSelectVehicle").value = car.id; autoFillQuoteData(); document.getElementById("quoteService").value = q.service; document.getElementById("costParts").value = q.parts || 0; document.getElementById("costLabor").value = q.labor || 0; calculateQuoteTotal(); editingQuoteId = q.id; document.getElementById("btnSaveQuote").textContent = "💾 Actualizar e Informar por WhatsApp"; window.scrollTo({ top: 0, behavior: 'smooth' }); } else { alert("Vehículo inactivo."); } }
+    
+    function resendQuoteWhatsApp(id) { var q = getLocalData("legado_supa_quotes").find(function(x) { return x.id == id; }); if(!q) return; window.open("https://wa.me/" + q.phone + "?text=" + encodeURIComponent("Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + Number(q.subtotal).toFixed(2) + "\n🧾 *IVA (16%):* $" + Number(q.iva).toFixed(2) + "\n💰 *TOTAL NETO:* $" + Number(q.total).toFixed(2)), '_blank'); }
+    
+    function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { if(_supabase) { _supabase.from('cotizaciones').delete().eq('id', id).then(function() { loadAllData(); }); } } }
+    
+    function openLargeImage(src) { document.getElementById("modalImgSrc").src = src; document.getElementById("imageModal").style.display = "flex"; }
+    
     function getLocalData(key) { try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : []; } catch(e) { return []; } }
+    
     function filterOrders() { var q = document.getElementById("searchInput").value.toLowerCase(); var rows = document.querySelectorAll("#ordersTableBody tr"); rows.forEach(function(r) { if(r.cells.length < 2) return; if(r.textContent.toLowerCase().indexOf(q) > -1) { r.style.display = ""; } else { r.style.display = "none"; } }); }
     
-    function exportToExcel() { 
-        var list = getLocalData("legadoStorageFinalV50"); if (list.length === 0) { alert("No hay datos."); return; } 
-        var csv = "\uFEFFPlacas,Marca,Modelo,Año,Color,Kilometraje,VIN,Cliente,Telefono,Falla,Estado\n"; 
-        for (var i = 0; i < list.length; i++) { var o = list[i]; var cleanFault = o.fault.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + o.plates + '","' + o.brand + '","' + o.model + '","' + o.year + '","' + o.color + '","' + o.km + '","' + o.vin + '","' + o.owner + '","' + o.phone + '","' + cleanFault + '","' + o.status + '"\n'; } 
-        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Bitacora_Legado_Completa.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); 
-    }
+    function exportToExcel() { var list = getLocalData("legado_supa_orders"); if (list.length === 0) { alert("No hay datos."); return; } var csv = "\uFEFFPlacas,Marca,Modelo,Año,Color,Kilometraje,VIN,Cliente,Telefono,Falla,Estado\n"; for (var i = 0; i < list.length; i++) { var o = list[i]; var cleanFault = o.fault.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + o.plates + '","' + o.brand + '","' + o.model + '","' + o.year + '","' + o.color + '","' + o.km + '","' + o.vin + '","' + o.owner + '","' + o.phone + '","' + cleanFault + '","' + o.status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Bitacora_Legado_Supabase.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
     
-    function exportQuotesToExcel() { 
-        var list = getLocalData("legadoQuotesFinalV50"); if (list.length === 0) { alert("No hay cotizaciones para exportar."); return; } 
-        var csv = "\uFEFFPlacas,Cliente,Servicio,Subtotal,IVA_16,Total_Neto,Estatus\n"; 
-        for (var i = 0; i < list.length; i++) { var q = list[i]; var cleanService = q.service.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + q.plates + '","' + q.owner + '","' + cleanService + '","' + q.subtotal.toFixed(2) + '","' + q.iva.toFixed(2) + '","' + q.total.toFixed(2) + '","' + q.quoteStatus + '"\n'; } 
-        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_Legado.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); 
-    }
+    function exportQuotesToExcel() { var list = getLocalData("legado_supa_quotes"); if (list.length === 0) { alert("No hay cotizaciones para exportar."); return; } var csv = "\uFEFFPlacas,Cliente,Servicio,Subtotal,IVA_16,Total_Neto,Estatus\n"; for (var i = 0; i < list.length; i++) { var q = list[i]; var cleanService = q.service.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + q.plates + '","' + q.owner + '","' + cleanService + '","' + Number(q.subtotal).toFixed(2) + '","' + Number(q.iva).toFixed(2) + '","' + Number(q.total).toFixed(2) + '","' + q.quote_status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_Supabase.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 </script>
+</body>
+</html>
