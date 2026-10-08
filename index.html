@@ -225,48 +225,42 @@
         displayOrders();
     }
 
-    // MOTOR HÍBRIDO BLINDADO: Pinta los datos locales al instante para que nunca se borren al dar refresh
     function loadAllData() {
-        // 1. Carga inmediata de la memoria local para evitar pantallas en blanco
         displayOrders(); 
         displayQuotes(); 
         updateVehicleDropdown(); 
         
         if (!cloudUrl) return;
 
-        // 2. Consulta asíncrona a la nube en segundo plano para sincronizar dispositivos
         fetch(cloudUrl + "?action=read")
         .then(function(res) { return res.json(); })
         .then(function(cloudData) {
-            // Solo actualiza la memoria si la nube contiene información válida
             if (cloudData.orders && cloudData.orders.length > 0) { 
                 localStorage.setItem("legadoStorageFinalV50", JSON.stringify(cloudData.orders)); 
             }
             if (cloudData.quotes && cloudData.quotes.length > 0) { 
                 localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(cloudData.quotes)); 
             }
-            // Refresca la vista de forma invisible con los datos actualizados de la nube
             displayOrders(); 
             displayQuotes(); 
             updateVehicleDropdown();
         })
-        .catch(function(err) { console.log("Operando con base de datos local protegida."); });
+        .catch(function(err) { console.log("Carga local activa."); });
     }
 
+    // TRANSMISIÓN CORREGIDA: Envía el JSON directo en el cuerpo de la petición sin contenedores adicionales
     function syncToCloud() {
         if (!cloudUrl) return;
         var orders = getLocalData("legadoStorageFinalV50");
         var quotes = getLocalData("legadoQuotesFinalV50");
         var payload = { orders: orders, quotes: quotes };
-        
-        var formData = new FormData();
-        formData.append("cloudData", JSON.stringify(payload));
 
         fetch(cloudUrl, {
             method: "POST",
-            body: formData
+            contentType: "application/json",
+            body: JSON.stringify(payload)
         })
-        .then(function() { console.log("✓ Datos respaldados de forma segura en la nube de Google"); })
+        .then(function() { console.log("✓ Sincronización exitosa y unificada."); })
         .catch(function(err) { console.error("Error al transmitir a la nube:", err); });
     }
 </script>
