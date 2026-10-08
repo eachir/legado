@@ -248,7 +248,7 @@
         .catch(function(err) { console.log("Carga local activa."); });
     }
 
-    // TRANSMISIÓN SANEADA: Envía la cadena de texto JSON directa sin empaquetadores para resolver el bloqueo del celular
+    // CORRECCIÓN MAESTRA: Se inyecta 'text/plain' en los headers para que Chrome autorice el envío inmediato de fotos y JSON
     function syncToCloud() {
         if (!cloudUrl) return;
         var orders = getLocalData("legadoStorageFinalV50");
@@ -257,6 +257,7 @@
 
         fetch(cloudUrl, {
             method: "POST",
+            headers: { "Content-Type": "text/plain" }, // <-- Crucial: Desbloquea la seguridad de Chrome móvil
             body: JSON.stringify(payload)
         })
         .then(function() { console.log("✓ Sincronización exitosa y unificada."); })
@@ -491,7 +492,6 @@
 <script>
     function triggerImageUpload(quoteId) { activeQuoteIdForUpload = quoteId; document.getElementById("hiddenFileInput").click(); }
     
-    // COMPRESOR REPARADO DE RAÍZ: Lee el índice exacto [0] para procesar la imagen de forma asíncrona y fluida
     function handleFileSelected(input) {
         if (!input.files || input.files.length === 0) return;
         var reader = new FileReader();
@@ -504,12 +504,11 @@
                 else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
                 canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height);
                 
-                // Comprime la evidencia masiva a un JPEG ligero antes de transmitirlo a la nube fijos
-                var compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                // CORRECCIÓN: Apunta estrictamente a la gaveta V50 unificada para que no se borre al dar refresh
                 var quotesList = getLocalData("legadoQuotesFinalV50");
                 for(var i = 0; i < quotesList.length; i++) { 
                     if(quotesList[i].id === activeQuoteIdForUpload) { 
-                        quotesList[i].imageEvidence = compressedBase64; 
+                        quotesList[i].imageEvidence = canvas.toDataURL('image/jpeg', 0.7); 
                         break; 
                     } 
                 }
@@ -517,7 +516,7 @@
             };
             img.src = e.target.result;
         };
-        reader.readAsDataURL(input.files[0]); // <--- Corrección crítica: Lee el primer archivo seleccionado
+        reader.readAsDataURL(input.files);
     }
 
     function displayQuotes() {
