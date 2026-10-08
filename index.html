@@ -260,20 +260,34 @@
         });
     }
 
+    // CORRECCIÓN DEFINITIVA: Bucle clásico para evitar que la app se congele al escribir placas o guardar
     function searchExistingVehicle() {
         var inputPlates = document.getElementById("plates").value.trim().toUpperCase();
         if (inputPlates === "") return;
         var list = getLocalData("legadoStorageFinalV42");
-        var car = list.find(function(x) { return x.plates === inputPlates; });
+        if (list.length === 0) return;
+        
+        var car = null;
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].plates === inputPlates) {
+                car = list[i];
+                break;
+            }
+        }
+        
         if (car) {
-            document.getElementById("brand").value = car.brand; document.getElementById("model").value = car.model;
-            document.getElementById("year").value = car.year; document.getElementById("color").value = car.color;
-            document.getElementById("vin").value = car.vin; document.getElementById("owner").value = car.owner;
+            document.getElementById("brand").value = car.brand; 
+            document.getElementById("model").value = car.model;
+            document.getElementById("year").value = car.year; 
+            document.getElementById("color").value = car.color;
+            document.getElementById("vin").value = car.vin; 
+            document.getElementById("owner").value = car.owner;
             document.getElementById("phone").value = car.phone.replace(/^52/, '');
             alert("🚗 ¡Unidad recurrente identificada! Datos precargados.");
         }
     }
 </script>
+
 <!-- BLOQUE 12 -->
 <script>
     function saveOrder() {
