@@ -77,7 +77,6 @@
 <div class="container">
     <h1>🔧 Taller Mecánico Legado</h1>
     
-    <!-- Sincronización Oculta por defecto frente a mecánicos -->
     <div class="cloud-panel" style="display:none;" id="cloudPanelContainer">
         <label style="color: #38bdf8; font-weight: bold;">🌐 Sincronización Multiplataforma (Google Sheets URL):</label>
         <input type="text" id="cloudUrlInput" placeholder="Pega tu enlace de Google Apps Script que termina en /exec..." onchange="saveCloudUrl()">
@@ -133,7 +132,7 @@
             </table>
         </div>
     </div>
-    <!-- BLOQUE 7 -->
+<!-- BLOQUE 7 -->
     <!-- PANTALLA 2: COTIZADOR -->
     <div id="screenQuotes" class="screen">
         <h2>Generar Presupuesto / Cotización (IVA 16%)</h2>
@@ -214,17 +213,17 @@
         fetch(cloudUrl + "?action=read")
         .then(function(res) { return res.json(); })
         .then(function(cloudData) {
-            if (cloudData.orders) localStorage.setItem("legadoStorageFinalV40", JSON.stringify(cloudData.orders));
-            if (cloudData.quotes) localStorage.setItem("legadoQuotesFinalV40", JSON.stringify(cloudData.quotes));
+            if (cloudData.orders) localStorage.setItem("legadoStorageFinalV41", JSON.stringify(cloudData.orders));
+            if (cloudData.quotes) localStorage.setItem("legadoQuotesFinalV41", JSON.stringify(cloudData.quotes));
             displayOrders(); displayQuotes(); updateVehicleDropdown();
         })
-        .catch(function(err) { console.log("Modo fuera de línea."); });
+        .catch(function(err) { console.log("Modo offline."); });
     }
 
     function syncToCloud() {
         if (!cloudUrl) return;
-        var orders = getLocalData("legadoStorageFinalV40");
-        var quotes = getLocalData("legadoQuotesFinalV40");
+        var orders = getLocalData("legadoStorageFinalV41");
+        var quotes = getLocalData("legadoQuotesFinalV41");
         fetch(cloudUrl, {
             method: "POST",
             mode: "no-cors",
@@ -237,10 +236,14 @@
 <script>
     var tempCarPhotos = [];
 
+    // CORRECCIÓN DE MOTOR: Procesa las fotos de forma controlada y asíncrona para no congelar el botón guardar
     function processCarPhotos(input) {
         if (!input.files || input.files.length === 0) return;
         tempCarPhotos = [];
-        Array.from(input.files).slice(0, 4).forEach(function(file) {
+        var filesList = Array.from(input.files).slice(0, 4);
+        var loadedCount = 0;
+
+        filesList.forEach(function(file) {
             var reader = new FileReader();
             reader.onload = function(e) {
                 var img = new Image();
@@ -250,7 +253,9 @@
                     if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } } 
                     else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
                     canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height);
+                    
                     tempCarPhotos.push(canvas.toDataURL('image/jpeg', 0.6));
+                    loadedCount++;
                 };
                 img.src = e.target.result;
             };
@@ -261,7 +266,7 @@
     function searchExistingVehicle() {
         var inputPlates = document.getElementById("plates").value.trim().toUpperCase();
         if (inputPlates === "") return;
-        var list = getLocalData("legadoStorageFinalV40");
+        var list = getLocalData("legadoStorageFinalV41");
         var car = list.find(function(x) { return x.plates === inputPlates; });
         if (car) {
             document.getElementById("brand").value = car.brand; document.getElementById("model").value = car.model;
@@ -287,11 +292,11 @@
         var f = document.getElementById("fault").value.trim().toUpperCase();
         var s = document.getElementById("status").value;
 
-        if (!p || !b || !m || !y || !c || !k || !v || !o || !ph || !f) { alert("Completa todos los campos."); return; }
+        if (!p || !b || !m || !y || !c || !k || !v || !o || !ph || !f) { alert("Completa todos los campos obligatorios."); return; }
         var cleanPhone = ph.replace(/[^0-9]/g, '');
         if (cleanPhone.length === 10 && !cleanPhone.startsWith("52")) { cleanPhone = "52" + cleanPhone; }
 
-        var list = getLocalData("legadoStorageFinalV40");
+        var list = getLocalData("legadoStorageFinalV41");
         if (editingOrderId !== null) {
             for (var i = 0; i < list.length; i++) {
                 if (list[i].id === editingOrderId) {
@@ -304,12 +309,12 @@
         } else {
             list.push({ id: Date.now(), plates: p, brand: b, model: m, year: y, color: c, km: k, vin: v, owner: o, phone: cleanPhone, fault: f, status: s, carPhotos: tempCarPhotos });
         }
-        localStorage.setItem("legadoStorageFinalV40", JSON.stringify(list));
+        localStorage.setItem("legadoStorageFinalV41", JSON.stringify(list));
         document.getElementById("orderForm").reset(); tempCarPhotos = []; displayOrders(); updateVehicleDropdown(); syncToCloud();
     }
 
     function editOrder(id) {
-        var list = getLocalData("legadoStorageFinalV40"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
+        var list = getLocalData("legadoStorageFinalV41"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
         document.getElementById("plates").value = car.plates; document.getElementById("brand").value = car.brand;
         document.getElementById("model").value = car.model; document.getElementById("year").value = car.year;
         document.getElementById("color").value = car.color; document.getElementById("km").value = car.km;
@@ -323,13 +328,13 @@
 <script>
     function deleteOrder(id) {
         if(confirm("¿ELIMINAR permanentemente esta orden?")) {
-            var filtered = getLocalData("legadoStorageFinalV40").filter(function(x) { return x.id !== id; });
-            localStorage.setItem("legadoStorageFinalV40", JSON.stringify(filtered)); displayOrders(); updateVehicleDropdown(); syncToCloud();
+            var filtered = getLocalData("legadoStorageFinalV41").filter(function(x) { return x.id !== id; });
+            localStorage.setItem("legadoStorageFinalV41", JSON.stringify(filtered)); displayOrders(); updateVehicleDropdown(); syncToCloud();
         }
     }
 
     function printSingleOrder(id) {
-        var list = getLocalData("legadoStorageFinalV40"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
+        var list = getLocalData("legadoStorageFinalV41"); var car = list.find(function(x) { return x.id === id; }); if (!car) return;
         var textStatus = (car.status === 'Revision') ? '🔴 En revisión' : (car.status === 'Proceso') ? '🟡 En proceso' : (car.status === 'Terminado') ? '🟢 Terminado' : car.status;
 
         var printWindow = window.open('', '_blank');
@@ -352,7 +357,7 @@
 <script>
     function displayOrders() {
         var tbody = document.getElementById("ordersTableBody"); if(!tbody) return; tbody.innerHTML = "";
-        var list = getLocalData("legadoStorageFinalV40");
+        var list = getLocalData("legadoStorageFinalV41");
         var filteredList = list.filter(function(item) { return currentView === 'activos' ? item.status !== 'Entregado' : item.status === 'Entregado'; });
         if (filteredList.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No hay registros.</td></tr>'; return; }
         
@@ -373,32 +378,32 @@
             var editBtnHtml = item.status === 'Entregado' ? '' : '<button class="deliver-btn" style="background-color:#0284c7;" onclick="editOrder(' + item.id + ')">✏️ Editar</button>';
             var deleteBtnHtml = '<button class="deliver-btn" style="background:#ef4444;" onclick="deleteOrder(' + item.id + ')">Eliminar</button>';
 
-            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')' + photosHtml + '</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="https://wa.me/' + item.phone + '?text=' + encodeURIComponent("Hola " + item.owner + ", Taller Legado. Tu unidad [" + item.plates + "] está en: *" + textStatus + "*.") + '" target="_blank" class="whats-link">Enviar WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="printSingleOrder(' + item.id + ')">Imprimir</button></td>';
+            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')' + photosHtml + '</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="https://wa.me' + item.phone + '?text=' + encodeURIComponent("Hola " + item.owner + ", Taller Legado. Tu unidad [" + item.plates + "] está en: *" + textStatus + "*.") + '" target="_blank" class="whats-link">Enviar WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="printSingleOrder(' + item.id + ')">Imprimir</button></td>';
             tbody.appendChild(tr);
         }
     }
 
     function updateStatus(id, newStatus) {
-        var list = getLocalData("legadoStorageFinalV40");
+        var list = getLocalData("legadoStorageFinalV41");
         for (var i = 0; i < list.length; i++) { if (list[i].id === id) { list[i].status = newStatus; break; } }
-        localStorage.setItem("legadoStorageFinalV40", JSON.stringify(list)); displayOrders(); syncToCloud();
+        localStorage.setItem("legadoStorageFinalV41", JSON.stringify(list)); displayOrders(); syncToCloud();
     }
     function deliverVehicle(id) {
         if(confirm("¿Mover este auto al historial de entregados?")) {
-            var list = getLocalData("legadoStorageFinalV40");
+            var list = getLocalData("legadoStorageFinalV41");
             for (var i = 0; i < list.length; i++) { if (list[i].id === id) { list[i].status = 'Entregado'; break; } }
-            localStorage.setItem("legadoStorageFinalV40", JSON.stringify(list)); displayOrders(); updateVehicleDropdown(); syncToCloud();
+            localStorage.setItem("legadoStorageFinalV41", JSON.stringify(list)); displayOrders(); updateVehicleDropdown(); syncToCloud();
         }
     }
     function updateVehicleDropdown() {
         var select = document.getElementById("quoteSelectVehicle"); if(!select) return; select.innerHTML = '<option value="">-- Elige las placas --</option>';
-        getLocalData("legadoStorageFinalV40").filter(function(car) { return car.status !== 'Entregado'; }).forEach(function(car) {
+        getLocalData("legadoStorageFinalV41").filter(function(car) { return car.status !== 'Entregado'; }).forEach(function(car) {
             var opt = document.createElement("option"); opt.value = car.id; opt.textContent = car.plates + " - " + car.brand + " " + car.model; select.appendChild(opt);
         });
     }
     function autoFillQuoteData() {
         var carId = document.getElementById("quoteSelectVehicle").value; if (!carId) { document.getElementById("quoteOwner").value = ""; document.getElementById("quoteVehicle").value = ""; return; }
-        var car = getLocalData("legadoStorageFinalV40").find(function(x) { return x.id == carId; });
+        var car = getLocalData("legadoStorageFinalV41").find(function(x) { return x.id == carId; });
         if(car) { document.getElementById("quoteOwner").value = car.owner; document.getElementById("quoteVehicle").value = car.brand + " " + car.model; }
     }
 </script>
@@ -418,9 +423,9 @@
         var parts = parseFloat(document.getElementById("costParts").value) || 0;
         var labor = parseFloat(document.getElementById("costLabor").value) || 0;
         if (!carId || !service) { alert("Completa los datos."); return; }
-        var car = getLocalData("legadoStorageFinalV40").find(function(x) { return x.id == carId; });
+        var car = getLocalData("legadoStorageFinalV41").find(function(x) { return x.id == carId; });
         var subtotal = parts + labor; var iva = subtotal * 0.16; var total = subtotal + iva;
-        var quotesList = getLocalData("legadoQuotesFinalV40");
+        var quotesList = getLocalData("legadoQuotesFinalV41");
 
         if (editingQuoteId !== null) {
             for (var i = 0; i < quotesList.length; i++) {
@@ -434,7 +439,7 @@
             var newQuote = { id: Date.now(), plates: car.plates, owner: car.owner, phone: car.phone, vehicle: car.brand + " " + car.model, service: service, subtotal: subtotal, iva: iva, total: total, imageEvidence: "", quoteStatus: "Pendiente" };
             quotesList.push(newQuote); var activeIdToSend = newQuote.id;
         }
-        localStorage.setItem("legadoQuotesFinalV40", JSON.stringify(quotesList));
+        localStorage.setItem("legadoQuotesFinalV41", JSON.stringify(quotesList));
         document.getElementById("quoteForm").reset(); calculateQuoteTotal(); displayQuotes(); resendQuoteWhatsApp(activeIdToSend); syncToCloud();
     }
     function triggerImageUpload(quoteId) { activeQuoteIdForUpload = quoteId; document.getElementById("hiddenFileInput").click(); }
@@ -449,9 +454,9 @@
                 if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } } 
                 else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
                 canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height);
-                var quotesList = getLocalData("legadoQuotesFinalV40");
+                var quotesList = getLocalData("legadoQuotesFinalV41");
                 for(var i = 0; i < quotesList.length; i++) { if(quotesList[i].id === activeQuoteIdForUpload) { quotesList[i].imageEvidence = canvas.toDataURL('image/jpeg', 0.7); break; } }
-                localStorage.setItem("legadoQuotesFinalV40", JSON.stringify(quotesList)); displayQuotes(); syncToCloud();
+                localStorage.setItem("legadoQuotesFinalV41", JSON.stringify(quotesList)); displayQuotes(); syncToCloud();
             };
             img.src = e.target.result;
         };
@@ -459,7 +464,7 @@
     }
     function displayQuotes() {
         var tbody = document.getElementById("quotesTableBody"); if(!tbody) return; tbody.innerHTML = "";
-        var quotes = getLocalData("legadoQuotesFinalV40");
+        var quotes = getLocalData("legadoQuotesFinalV41");
         if(quotes.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:15px;">No hay cotizaciones.</td></tr>'; return; }
         for(var i = 0; i < quotes.length; i++) {
             var q = quotes[i]; var tr = document.createElement("tr");
@@ -470,12 +475,14 @@
         }
     }
     function printSingleQuote(id) {
-        var quotes = getLocalData("legadoQuotesFinalV40"); var q = quotes.find(function(x) { return x.id == id; }); if (!q) return;
+        var quotes = getLocalData("legadoQuotesFinalV41"); var q = quotes.find(function(x) { return x.id == id; }); if (!q) return;
         var w = window.open('', '_blank'); w.document.write('<html><head><title>Presupuesto</title><style>body{font-family:sans-serif;padding:25px;color:#000;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:20px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;} .box{border:1px solid #000;padding:12px;border-radius:6px;margin-bottom:15px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:13px;} .total-box{text-align:right;font-size:15px;line-height:1.6;}</style></head><body><div class="header"><h1>💰 CO-TIZACIÓN DE SERVICIO</h1><p>Presupuesto Técnico Financiero</p></div><div class="grid"><div><div class="title">Cliente:</div><b>Nombre:</b> ' + q.owner + '</div><div><div class="title">Vehículo:</div><b>Placas:</b> ' + q.plates + '<br><b>Unidad:</b> ' + q.vehicle + '</div></div><div class="box"><div class="title">Trabajo:</div><p style="margin:0; white-space:pre-wrap;">' + q.service + '</p></div><div class="total-box"><b>Subtotal:</b> $' + q.subtotal.toFixed(2) + '<br><b>IVA (16%):</b> $' + q.iva.toFixed(2) + '<br><span style="font-size:18px;color:#10b981;"><b>TOTAL NETO:</b> $' + q.total.toFixed(2) + '</span></div></body></html>'); w.document.close(); w.focus(); setTimeout(function(){ w.print(); w.close(); }, 500);
     }
-    function updateQuoteStatus(id, newStatus) { var quotes = getLocalData("legadoQuotesFinalV40"); for(var i = 0; i < quotes.length; i++) { if(quotes[i].id === id) { quotes[i].quoteStatus = newStatus; break; } } localStorage.setItem("legadoQuotesFinalV40", JSON.stringify(quotes)); displayQuotes(); syncToCloud(); }
-    function editQuote(id) { var quotes = getLocalData("legadoQuotesFinalV40"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return; var car = getLocalData("legadoStorageFinalV40").find(function(c) { return c.plates === q.plates; }); if(car) { document.getElementById("quoteSelectVehicle").value = car.id; autoFillQuoteData(); document.getElementById("quoteService").value = q.service; document.getElementById("costParts").value = q.parts || 0; document.getElementById("costLabor").value = q.labor || 0; calculateQuoteTotal(); editingQuoteId = q.id; document.getElementById("btnSaveQuote").textContent = "💾 Actualizar e Informar por WhatsApp"; window.scrollTo({ top: 0, behavior: 'smooth' }); } else { alert("Vehículo inactivo."); } }
-    function resendQuoteWhatsApp(id) { var q = getLocalData("legadoQuotesFinalV40").find(function(x) { return x.id == id; }); if(!q) return; window.open("https://wa.me/" + q.phone + "?text=" + encodeURIComponent("Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠 *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n🧾 *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2)), '_blank'); }
-    function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { var filtered = getLocalData("legadoQuotesFinalV40").filter(function(q) { return q.id !== id; }); localStorage.setItem("legadoQuotesFinalV40", JSON.stringify(filtered)); displayQuotes(); syncToCloud(); } }
+    function updateQuoteStatus(id, newStatus) { var quotes = getLocalData("legadoQuotesFinalV41"); for(var i = 0; i < quotes.length; i++) { if(quotes[i].id === id) { quotes[i].quoteStatus = newStatus; break; } } localStorage.setItem("legadoQuotesFinalV41", JSON.stringify(quotes)); displayQuotes(); syncToCloud(); }
+    function editQuote(id) { var quotes = getLocalData("legadoQuotesFinalV41"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return; var car = getLocalData("legadoStorageFinalV41").find(function(c) { return c.plates === q.plates; }); if(car) { document.getElementById("quoteSelectVehicle").value = car.id; autoFillQuoteData(); document.getElementById("quoteService").value = q.service; document.getElementById("costParts").value = q.parts || 0; document.getElementById("costLabor").value = q.labor || 0; calculateQuoteTotal(); editingQuoteId = q.id; document.getElementById("btnSaveQuote").textContent = "💾 Actualizar e Informar por WhatsApp"; window.scrollTo({ top: 0, behavior: 'smooth' }); } else { alert("Vehículo inactivo."); } }
+    function resendQuoteWhatsApp(id) { var q = getLocalData("legadoQuotesFinalV41").find(function(x) { return x.id == id; }); if(!q) return; window.open("https://wa.me" + q.phone + "?text=" + encodeURIComponent("Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠 *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + q.subtotal.toFixed(2) + "\n🧾 *IVA (16%):* $" + q.iva.toFixed(2) + "\n💰 *TOTAL NETO:* $" + q.total.toFixed(2)), '_blank'); }
+    function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { var filtered = getLocalData("legadoQuotesFinalV41").filter(function(q) { return q.id !== id; }); localStorage.setItem("legadoQuotesFinalV41", JSON.stringify(filtered)); displayQuotes(); syncToCloud(); } }
     function getLocalData(key) { try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : []; } catch(e) { return []; } }
-
+</script>
+</body>
+</html>
