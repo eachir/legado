@@ -235,10 +235,10 @@
         fetch(cloudUrl + "?action=read")
         .then(function(res) { return res.json(); })
         .then(function(cloudData) {
-            if (cloudData.orders && cloudData.orders.length > 0) { 
+            if (cloudData.orders) { 
                 localStorage.setItem("legadoStorageFinalV50", JSON.stringify(cloudData.orders)); 
             }
-            if (cloudData.quotes && cloudData.quotes.length > 0) { 
+            if (cloudData.quotes) { 
                 localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(cloudData.quotes)); 
             }
             displayOrders(); 
@@ -248,7 +248,7 @@
         .catch(function(err) { console.log("Carga local activa."); });
     }
 
-    // TRANSMISIÓN CORREGIDA: Envía el JSON directo en el cuerpo de la petición sin contenedores adicionales
+    // TRANSMISIÓN SANEADA: Envía la cadena de texto JSON directa sin empaquetadores para resolver el bloqueo del celular
     function syncToCloud() {
         if (!cloudUrl) return;
         var orders = getLocalData("legadoStorageFinalV50");
@@ -257,13 +257,13 @@
 
         fetch(cloudUrl, {
             method: "POST",
-            contentType: "application/json",
             body: JSON.stringify(payload)
         })
         .then(function() { console.log("✓ Sincronización exitosa y unificada."); })
         .catch(function(err) { console.error("Error al transmitir a la nube:", err); });
     }
 </script>
+
 
 <!-- BLOQUE 11 -->
 <script>
