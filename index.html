@@ -225,19 +225,34 @@
         displayOrders();
     }
 
+    // MOTOR HÍBRIDO BLINDADO: Pinta los datos locales al instante para que nunca se borren al dar refresh
     function loadAllData() {
-        if (!cloudUrl) { displayOrders(); displayQuotes(); updateVehicleDropdown(); return; }
+        // 1. Carga inmediata de la memoria local para evitar pantallas en blanco
+        displayOrders(); 
+        displayQuotes(); 
+        updateVehicleDropdown(); 
+        
+        if (!cloudUrl) return;
+
+        // 2. Consulta asíncrona a la nube en segundo plano para sincronizar dispositivos
         fetch(cloudUrl + "?action=read")
         .then(function(res) { return res.json(); })
         .then(function(cloudData) {
-            if (cloudData.orders) localStorage.setItem("legadoStorageFinalV50", JSON.stringify(cloudData.orders));
-            if (cloudData.quotes) localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(cloudData.quotes));
-            displayOrders(); displayQuotes(); updateVehicleDropdown();
+            // Solo actualiza la memoria si la nube contiene información válida
+            if (cloudData.orders && cloudData.orders.length > 0) { 
+                localStorage.setItem("legadoStorageFinalV50", JSON.stringify(cloudData.orders)); 
+            }
+            if (cloudData.quotes && cloudData.quotes.length > 0) { 
+                localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(cloudData.quotes)); 
+            }
+            // Refresca la vista de forma invisible con los datos actualizados de la nube
+            displayOrders(); 
+            displayQuotes(); 
+            updateVehicleDropdown();
         })
-        .catch(function(err) { console.log("Cargando base de datos local..."); });
+        .catch(function(err) { console.log("Operando con base de datos local protegida."); });
     }
 
-    // NÚCLEO MAESTRO REPARADO: Encapsula el JSON masivo en un contenedor FormData binario para que Chrome no rompa las fotos
     function syncToCloud() {
         if (!cloudUrl) return;
         var orders = getLocalData("legadoStorageFinalV50");
@@ -251,11 +266,10 @@
             method: "POST",
             body: formData
         })
-        .then(function() { console.log("✓ Sincronización exitosa y blindada en la nube."); })
+        .then(function() { console.log("✓ Datos respaldados de forma segura en la nube de Google"); })
         .catch(function(err) { console.error("Error al transmitir a la nube:", err); });
     }
 </script>
-
 
 <!-- BLOQUE 11 -->
 <script>
