@@ -226,6 +226,7 @@
     }
 
     function loadAllData() {
+        // Carga inmediata local para que el celular nunca se quede en blanco
         displayOrders(); 
         displayQuotes(); 
         updateVehicleDropdown(); 
@@ -235,10 +236,10 @@
         fetch(cloudUrl + "?action=read")
         .then(function(res) { return res.json(); })
         .then(function(cloudData) {
-            if (cloudData.orders) { 
+            if (cloudData.orders && cloudData.orders.length > 0) { 
                 localStorage.setItem("legadoStorageFinalV50", JSON.stringify(cloudData.orders)); 
             }
-            if (cloudData.quotes) { 
+            if (cloudData.quotes && cloudData.quotes.length > 0) { 
                 localStorage.setItem("legadoQuotesFinalV50", JSON.stringify(cloudData.quotes)); 
             }
             displayOrders(); 
@@ -248,23 +249,24 @@
         .catch(function(err) { console.log("Carga local activa."); });
     }
 
-    // CORRECCIÓN MAESTRA: Se inyecta 'text/plain' en los headers para que Chrome autorice el envío inmediato de fotos y JSON
+    // TRANSMISIÓN MAESTRA BLINDADA PARA CELULARES
     function syncToCloud() {
         if (!cloudUrl) return;
         var orders = getLocalData("legadoStorageFinalV50");
         var quotes = getLocalData("legadoQuotesFinalV50");
         var payload = { orders: orders, quotes: quotes };
 
+        // Forzamos el envío plano liberando las restricciones de Chrome Móvil
         fetch(cloudUrl, {
             method: "POST",
-            headers: { "Content-Type": "text/plain" }, // <-- Crucial: Desbloquea la seguridad de Chrome móvil
+            mode: "no-cors", // <-- Evita que el celular rechace el envío cruzado
+            headers: { "Content-Type": "text/plain" },
             body: JSON.stringify(payload)
         })
-        .then(function() { console.log("✓ Sincronización exitosa y unificada."); })
-        .catch(function(err) { console.error("Error al transmitir a la nube:", err); });
+        .then(function() { console.log("✓ Sincronizado fijos."); })
+        .catch(function(err) { console.error("Error transmisión:", err); });
     }
 </script>
-
 
 <!-- BLOQUE 11 -->
 <script>
