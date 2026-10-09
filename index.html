@@ -95,42 +95,16 @@
     <div class="cloud-panel" id="cloudPanelContainer">
         <div class="cloud-group">
             <label style="color: #38bdf8; font-weight: bold;">🔑 Canal de Sincronización Secreto (Escribe la misma palabra en todos tus equipos):</label>
-            <input type="text" id="secretChannelInput" placeholder="Ejemplo: legado_taller_2026" onchange="saveSecretChannel()">
+            <input type="text" id="secretChannelInput" placeholder="Ejemplo: legado_taller_2026" onblur="saveSecretChannel()" onkeyup="if(event.key==='Enter') saveSecretChannel()">
         </div>
-        <div style="font-size: 13px; color: #94a3b8; font-weight: bold; margin-top: 15px;" id="channelStatusDisplay">🔴 Modo Local (Sin sincronizar)</div>
+        <div style="font-size: 14px; color: #94a3b8; font-weight: bold; margin-top: 15px;" id="channelStatusDisplay">🔴 Modo Local (Sin sincronizar)</div>
     </div>
 
     <div class="main-nav">
         <button id="navOrders" class="nav-btn active" onclick="showScreen('orders')">📋 Órdenes de Servicio</button>
         <button id="navQuotes" class="nav-btn" onclick="showScreen('quotes')">💰 Cotizador de Servicios</button>
     </div>
-<!-- BLOQUE 5 -->
-    <!-- PANTALLA 1: BITÁCORA -->
-    <div id="screenOrders" class="screen active">
-        <h2>Registrar Nueva Orden de Servicio</h2>
-        <form id="orderForm">
-            <div class="form-grid">
-                <div class="form-group"><label>Placas:</label><input type="text" id="plates" placeholder="Ej. ABC-1234" oninput="this.value = this.value.toUpperCase()" onblur="searchExistingVehicle()"></div>
-                <div class="form-group"><label>Marca:</label><input type="text" id="brand" placeholder="Ej. Toyota" oninput="this.value = this.value.toUpperCase()"></div>
-                <div class="form-group"><label>Modelo:</label><input type="text" id="model" placeholder="Ej. Corolla" oninput="this.value = this.value.toUpperCase()"></div>
-                <div class="form-group"><label>Año:</label><input type="text" id="year" placeholder="Ej. 2018" oninput="this.value = this.value.toUpperCase()"></div>
-                <div class="form-group"><label>Color:</label><input type="text" id="color" placeholder="Ej. Rojo" oninput="this.value = this.value.toUpperCase()"></div>
-                <div class="form-group"><label>Kilometraje:</label><input type="text" id="km" placeholder="Ej. 85000 KM" oninput="this.value = this.value.toUpperCase()"></div>
-                <div class="form-group"><label>Número VIN:</label><input type="text" id="vin" placeholder="17 dígitos" oninput="this.value = this.value.toUpperCase()"></div>
-                <div class="form-group"><label>Nombre del Dueño:</label><input type="text" id="owner" placeholder="Ej. Juan" oninput="this.value = this.value.toUpperCase()"></div>
-                <div class="form-group"><label>Teléfono (México):</label><input type="tel" id="phone" placeholder="Ej. 4421234567"></div>
-                <div class="form-group"><label>Estado Inicial:</label>
-                    <select id="status">
-                        <option value="Revision">🔴 En revisión</option>
-                        <option value="Proceso">🟡 En proceso</option>
-                        <option value="Terminado">🟢 Terminado</option>
-                    </select>
-                </div>
-                <div class="form-group full-width"><label>Falla reportada:</label><textarea id="fault" placeholder="Detalles..." rows="3" oninput="this.value = this.value.toUpperCase()"></textarea></div>
-                <div class="form-group full-width"><label style="color:#38bdf8;">📸 Fotos de Recepción (Máx 4 imágenes):</label><input type="file" id="carPhotosInput" accept="image/*" multiple onchange="processCarPhotos(this)"></div>
-            </div>
-            <button type="button" class="btn-primary" id="btnSaveOrder" onclick="saveOrder()">Guardar en Bitácora e Informar</button>
-        </form>
+
 <!-- BLOQUE 6 -->
         <h2>Bitácora de Monitoreo</h2>
         <div class="tabs-container">
@@ -197,40 +171,50 @@
     var listenInterval = null;
 
     window.addEventListener('load', function() { 
-        // Recupera la palabra clave unificada de forma inamovible de la memoria del disco
+        // 1. Recupera la palabra clave unificada de la memoria del aparato
         secretChannelWord = localStorage.getItem("legado_supa_channel_v70") || "";
-        document.getElementById("secretChannelInput").value = secretChannelWord;
         
-        // Carga inmediata antiparpadeo de tus datos locales al dar refresh
-        displayOrders(); 
-        displayQuotes(); 
-        updateVehicleDropdown();
-        
+        // 2. CORRECCIÓN CRÍTICA: Inyecta físicamente la palabra dentro del cuadro de texto para que no aparezca vacío
         if (secretChannelWord) {
+            document.getElementById("secretChannelInput").value = secretChannelWord;
             document.getElementById("channelStatusDisplay").textContent = "🟢 SINCRONIZADO EN VIVO (" + secretChannelWord.toUpperCase() + ")";
             document.getElementById("channelStatusDisplay").style.color = "#10b981";
             startListeningRealtime();
+        } else {
+            document.getElementById("channelStatusDisplay").textContent = "🔴 Modo Local (Sin sincronizar)";
+            document.getElementById("channelStatusDisplay").style.color = "#94a3b8";
         }
+        
+        // Carga inmediata antiparpadeo de tus tablas contables y de bitácora
+        displayOrders(); 
+        displayQuotes(); 
+        updateVehicleDropdown();
     });
 
     function saveSecretChannel() {
         var rawInput = document.getElementById("secretChannelInput").value.trim();
-        // Sanea el texto eliminando espacios y caracteres raros
-        secretChannelWord = rawInput.toLowerCase().replace(/[^a-z0-9_]/g, '');
-        localStorage.setItem("legado_supa_channel_v70", secretChannelWord);
-        
-        if (secretChannelWord) {
-            document.getElementById("channelStatusDisplay").textContent = "🟢 SINCRONIZADO EN VIVO (" + secretChannelWord.toUpperCase() + ")";
-            document.getElementById("channelStatusDisplay").style.color = "#10b981";
-            startListeningRealtime();
-            syncToCloud(); // Ejecuta una transmisión inmediata de tus coches guardados
-        } else {
+        if (!rawInput) {
+            secretChannelWord = "";
+            localStorage.removeItem("legado_supa_channel_v70");
             document.getElementById("channelStatusDisplay").textContent = "🔴 Modo Local (Sin sincronizar)";
             document.getElementById("channelStatusDisplay").style.color = "#94a3b8";
             if(listenInterval) clearInterval(listenInterval);
+            return;
         }
+
+        // Sanea el texto eliminando espacios accidentales
+        secretChannelWord = rawInput.toLowerCase().replace(/[^a-z0-9_]/g, '');
+        localStorage.setItem("legado_supa_channel_v70", secretChannelWord);
+        document.getElementById("secretChannelInput").value = secretChannelWord;
+        
+        document.getElementById("channelStatusDisplay").textContent = "🟢 SINCRONIZADO EN VIVO (" + secretChannelWord.toUpperCase() + ")";
+        document.getElementById("channelStatusDisplay").style.color = "#10b981";
+        
+        startListeningRealtime();
+        syncToCloud(); // Fuerza una transmisión inmediata de tus autos actuales al aire
     }
 </script>
+
 
 <!-- BLOQUE 10 -->
 <script>
