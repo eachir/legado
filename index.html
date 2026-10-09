@@ -93,17 +93,28 @@
 <div class="container">
     <h1>🔥 Taller Mecánico Legado</h1>
     
-    <!-- PANEL DE CONFIGURACIÓN NATIVO: Pega el objeto firebaseConfig de tu consola aquí -->
-    <div class="cloud-panel" id="cloudPanelContainer">
-        <label style="color: #f58220; font-weight: bold;">🌐 Objeto de Configuración Firebase (firebaseConfig JSON):</label>
-        <textarea id="firebaseConfigInput" rows="6" placeholder='{ "apiKey": "AIza...", "databaseURL": "https://..." }' onchange="saveFirebaseConfig()"></textarea>
-        <button type="button" class="btn-primary" style="margin-top:0; padding:8px;" onclick="saveFirebaseConfig()">Enlazar Taller con Firebase</button>
+    <!-- PANEL DE CONEXIÓN SIMPLIFICADO: Copia y pega los 3 datos limpios de tu consola -->
+    <div class="cloud-panel" id="cloudPanelContainer" style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+        <div class="cloud-group">
+            <label style="color: #f58220; font-weight: bold;">🔑 1. API Key (apiKey):</label>
+            <input type="text" id="fbApiKey" placeholder="Pega tu apiKey (ej. AIzaSyA1...)" onchange="saveFirebaseConfig()">
+        </div>
+        <div class="cloud-group">
+            <label style="color: #f58220; font-weight: bold;">🌐 2. URL de Base de Datos (databaseURL):</label>
+            <input type="text" id="fbDbUrl" placeholder="https://firebaseio.com" onchange="saveFirebaseConfig()">
+        </div>
+        <div class="cloud-group">
+            <label style="color: #f58220; font-weight: bold;">📁 3. ID del Proyecto (projectId):</label>
+            <input type="text" id="fbProjectId" placeholder="El nombre corto de tu proyecto" onchange="saveFirebaseConfig()">
+        </div>
+        <button type="button" class="btn-primary" style="margin-top: 5px; padding: 10px;" onclick="saveFirebaseConfig()">Conectar Taller a Firebase</button>
     </div>
 
     <div class="main-nav">
         <button id="navOrders" class="nav-btn active" onclick="showScreen('orders')">📋 Órdenes de Servicio</button>
         <button id="navQuotes" class="nav-btn" onclick="showScreen('quotes')">💰 Cotizador de Servicios</button>
     </div>
+
 <!-- BLOQUE 5 -->
     <!-- PANTALLA 1: BITÁCORA -->
     <div id="screenOrders" class="screen active">
@@ -196,59 +207,43 @@
     
     var memoryOrders = [];
     var memoryQuotes = [];
-    var firebaseConfigString = "";
     var database = null;
 
     window.addEventListener('load', function() { 
-        firebaseConfigString = localStorage.getItem("legadoFirebaseConfig") || "";
-        document.getElementById("firebaseConfigInput").value = firebaseConfigString;
+        var savedKey = localStorage.getItem("fb_key") || "";
+        var savedUrl = localStorage.getItem("fb_url") || "";
+        var savedId = localStorage.getItem("fb_id") || "";
         
-        if (firebaseConfigString) {
+        document.getElementById("fbApiKey").value = savedKey;
+        document.getElementById("fbDbUrl").value = savedUrl;
+        document.getElementById("fbProjectId").value = savedId;
+        
+        // Inicializa automáticamente si ya existen datos guardados en este equipo
+        if (savedKey && savedUrl && savedId) {
             try {
-                var config = JSON.parse(firebaseConfigString);
+                var config = { apiKey: savedKey, databaseURL: savedUrl, projectId: savedId };
                 firebase.initializeApp(config);
                 database = firebase.database();
-                document.getElementById("cloudPanelContainer").style.display = "none";
+                document.getElementById("cloudPanelContainer").style.display = "none"; // Oculta panel con éxito
                 initRealtimeListeners();
-            } catch(e) { console.error("Error al arrancar Firebase:", e); }
+            } catch(e) { console.error("Error al arrancar Firebase local:", e); }
         }
     });
 
-    // REPARADOR ABSOLUTO: Destruye saltos de línea, espacios invisibles y caracteres de control
+    // MOTOR SIMPLIFICADO: Junta los campos sueltos y crea el ecosistema de Google libre de errores de comillas
     function saveFirebaseConfig() {
-        var rawText = document.getElementById("firebaseConfigInput").value.trim();
-        if (!rawText) { alert("El recuadro está vacío."); return; }
+        var key = document.getElementById("fbApiKey").value.trim();
+        var url = document.getElementById("fbDbUrl").value.trim();
+        var id = document.getElementById("fbProjectId").value.trim();
+        
+        if (!key || !url || !id) { return; } // Espera a que llenen los campos obligatorios
 
         try {
-            // 1. Extrae estrictamente el contenido entre las llaves primarias { }
-            var start = rawText.indexOf("{");
-            var end = rawText.lastIndexOf("}");
-            if (start === -1 || end === -1) { alert("Faltan las llaves { } en el texto."); return; }
-            var objText = rawText.substring(start, end + 1);
-
-            // 2. PURIFICADOR AGRESIVO: Remueve saltos de línea, tabulaciones y caracteres invisibles ocultos
-            var flatText = objText
-                .replace(/[\r\n\t]/g, ' ') // Cambia Enter y Tabulaciones por espacios normales
-                .replace(/[\u200B-\u200D\uFEFF]/g, '') // Elimina caracteres invisibles de ancho cero
-                .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"') // Sanea comillas curvas
-                .replace(/'/g, '"'); // Sanea comillas simples
-
-            // 3. Agrega comillas dobles automáticas a las palabras clave que no las tengan
-            var formattedText = flatText
-                .replace(/(\s*?)([a-zA-Z0-9_]+)(\s*?):/g, '$1"$2"$3:')
-                .replace(/,\s*}/g, '}') // Quita comas huérfanas al final
-                .replace(/;\s*$/g, ''); // Quita puntos y comas residuales
-
-            // 4. Intenta procesar el JSON ultra-limpio
-            var config = JSON.parse(formattedText);
+            localStorage.setItem("fb_key", key);
+            localStorage.setItem("fb_url", url);
+            localStorage.setItem("fb_id", id);
             
-            // 5. Construye la URL de la base de datos si Google la omitió de la pantalla
-            if (!config.databaseURL && config.projectId) {
-                config.databaseURL = "https://" + config.projectId + "://firebaseio.com";
-            }
-
-            // Guarda y arranca el ecosistema en la nube de Google
-            localStorage.setItem("legadoFirebaseConfig", JSON.stringify(config));
+            var config = { apiKey: key, databaseURL: url, projectId: id };
             
             firebase.initializeApp(config);
             database = firebase.database();
@@ -257,13 +252,14 @@
             document.getElementById("cloudPanelContainer").style.display = "none";
             initRealtimeListeners();
             
-            alert("🔥 ¡Conexión con Firebase establecida e indexada con éxito!");
+            alert("🔥 ¡Taller conectado a Firebase en tiempo real con éxito!");
         } catch(e) { 
             console.error(e);
-            alert("Sigue habiendo un carácter oculto que traba la lectura. Por favor limpia el texto en un bloc de notas e ingresa solo las líneas de datos."); 
+            alert("Hubo un problema al inicializar. Revisa los datos de las tres casillas."); 
         }
     }
 </script>
+
 
 
 <!-- BLOQUE 10 -->
