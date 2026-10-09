@@ -197,10 +197,11 @@
     var listenInterval = null;
 
     window.addEventListener('load', function() { 
-        secretChannelWord = localStorage.getItem("legadoSecretChannelWord") || "";
+        // Recupera la palabra clave unificada de forma inamovible de la memoria del disco
+        secretChannelWord = localStorage.getItem("legado_supa_channel_v70") || "";
         document.getElementById("secretChannelInput").value = secretChannelWord;
         
-        // Carga inmediata de la pantalla con datos fijos e instantáneos de la memoria del aparato
+        // Carga inmediata antiparpadeo de tus datos locales al dar refresh
         displayOrders(); 
         displayQuotes(); 
         updateVehicleDropdown();
@@ -213,16 +214,16 @@
     });
 
     function saveSecretChannel() {
-        // Convierte a minúsculas y elimina caracteres extraños para que el canal sea limpio
-        secretChannelWord = document.getElementById("secretChannelInput").value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-        localStorage.setItem("legadoSecretChannelWord", secretChannelWord);
+        var rawInput = document.getElementById("secretChannelInput").value.trim();
+        // Sanea el texto eliminando espacios y caracteres raros
+        secretChannelWord = rawInput.toLowerCase().replace(/[^a-z0-9_]/g, '');
+        localStorage.setItem("legado_supa_channel_v70", secretChannelWord);
         
         if (secretChannelWord) {
             document.getElementById("channelStatusDisplay").textContent = "🟢 SINCRONIZADO EN VIVO (" + secretChannelWord.toUpperCase() + ")";
             document.getElementById("channelStatusDisplay").style.color = "#10b981";
             startListeningRealtime();
-            // Ejecuta una sincronización inmediata al conectar el equipo
-            syncToCloud();
+            syncToCloud(); // Ejecuta una transmisión inmediata de tus coches guardados
         } else {
             document.getElementById("channelStatusDisplay").textContent = "🔴 Modo Local (Sin sincronizar)";
             document.getElementById("channelStatusDisplay").style.color = "#94a3b8";
@@ -230,6 +231,7 @@
         }
     }
 </script>
+
 <!-- BLOQUE 10 -->
 <script>
     function showScreen(name) {
@@ -247,56 +249,64 @@
         displayOrders();
     }
 
-    // TRANSMISIÓN POR AIRE: Envía los autos de una pantalla a otra usando protocolos HTTP nativos sin bloqueos
+    // TRANSMISOR INDESTRUCTIBLE: Envía los datos unificados V70 contables y de bitácora
     function syncToCloud() {
-        if (!secretChannelWord) return;
+        var activeChannel = localStorage.getItem("legado_supa_channel_v70") || secretChannelWord;
+        if (!activeChannel) return;
+        
         var orders = getLocalData("legadoStorageFinalV65");
         var quotes = getLocalData("legadoQuotesFinalV65");
-        var payload = { orders: orders, quotes: quotes, sender: Date.now().toString() };
+        var payload = { orders: orders, quotes: quotes, timestamp: Date.now().toString() };
 
-        fetch("https://ntfy.sh" + secretChannelWord, {
+        fetch("https://ntfy.sh" + activeChannel, {
             method: "POST",
-            headers: { "Title": "Update", "X-Cache": "no" },
+            headers: { "Title": "TallerLegadoUpdate", "X-Cache": "no" },
             body: JSON.stringify(payload)
-        }).catch(function(e) { console.log("Señal de aire ocupada, reintentando..."); });
+        }).catch(function(e) { console.log("Señal de red ocupada."); });
     }
 
-    // RECEPTOR ASÍNCRONO: Escucha el aire cada 3 segundos y actualiza la pantalla del celular sin dar refresh
+    // RECEPTOR MULTIDISPOSITIVO SANEADO: Sintoniza el aire de forma fija y permanente
     function startListeningRealtime() {
         if(listenInterval) clearInterval(listenInterval);
         
         listenInterval = setInterval(function() {
-            if (!secretChannelWord) return;
+            var activeChannel = localStorage.getItem("legado_supa_channel_v70") || secretChannelWord;
+            if (!activeChannel) return;
             
-            fetch("https://ntfy.sh" + secretChannelWord + "/json?poll=1")
+            fetch("https://ntfy.sh" + activeChannel + "/json?poll=1")
             .then(function(res) { return res.text(); })
             .then(function(text) {
                 if(!text.trim()) return;
-                // Divide los mensajes recibidos por la red
                 var lines = text.trim().split("\n");
-                var lastMessage = null;
+                var lastPayload = null;
                 
+                // Lee de abajo hacia arriba para jalar estrictamente la actualización más reciente
                 for(var i = lines.length - 1; i >= 0; i--) {
                     try {
                         var msg = JSON.parse(lines[i]);
                         if(msg.event === "message" && msg.text) {
-                            lastMessage = JSON.parse(msg.text);
-                            break;
+                            var parsedBody = JSON.parse(msg.text);
+                            if(parsedBody && parsedBody.orders) {
+                                lastPayload = parsedBody;
+                                break;
+                            }
                         }
                     } catch(e) {}
                 }
                 
-                if (lastMessage && lastMessage.orders) {
-                    localStorage.setItem("legadoStorageFinalV65", JSON.stringify(lastMessage.orders));
-                    localStorage.setItem("legadoQuotesFinalV65", JSON.stringify(lastMessage.quotes));
+                // Sincroniza las tablas del celular si el mensaje de internet contiene datos válidos
+                if (lastPayload) {
+                    localStorage.setItem("legadoStorageFinalV65", JSON.stringify(lastPayload.orders));
+                    localStorage.setItem("legadoQuotesFinalV65", JSON.stringify(lastPayload.quotes));
                     displayOrders();
                     displayQuotes();
                     updateVehicleDropdown();
                 }
-            }).catch(function(err) { console.log("Buscando señal..."); });
-        }, 3000);
+            }).catch(function(err) { console.log("Reconectando canal de aire..."); });
+        }, 3000); // Consulta la frecuencia cada 3 segundos de forma ultra-ligera
     }
 </script>
+
 <!-- BLOQUE 11 -->
 <script>
     var tempCarPhotos = [];
