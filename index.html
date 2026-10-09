@@ -441,7 +441,7 @@
             var editBtnHtml = item.status === 'Entregado' ? '' : '<button class="deliver-btn" style="background-color:#0284c7;" onclick="editOrder(' + item.id + ')">✏️ Editar</button>';
             var deleteBtnHtml = '<button class="deliver-btn" style="background:#ef4444;" onclick="deleteOrder(' + item.id + ')">Eliminar</button>';
 
-            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')' + photosHtml + '</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="https://wa.me/' + item.phone + '?text=' + encodeURIComponent("Hola " + item.owner + ", Taller Legado. Tu unidad [" + item.plates + "] está en estado: *" + textStatus + "*.") + '" target="_blank" class="whats-link">WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="printSingleOrder(' + item.id + ')">Imprimir</button></td>';
+            tr.innerHTML = '<td><b>' + item.plates + '</b></td><td>' + item.brand + ' ' + item.model + ' (' + item.year + '/' + item.color + ')' + photosHtml + '</td><td>' + item.km + '</td><td>' + item.vin + '</td><td>' + item.owner + '</td><td><a href="tel:' + item.phone + '" class="call-link">📞 Llamar</a><a href="https://wa.me//' + item.phone + '?text=' + encodeURIComponent("Hola " + item.owner + ", Taller Legado. Tu unidad [" + item.plates + "] está en estado: *" + textStatus + "*.") + '" target="_blank" class="whats-link">WhatsApp</a></td><td>' + item.fault + '</td><td>' + selectHtml + '</td><td class="actions-cell">' + actionBtn + editBtnHtml + deleteBtnHtml + '<button class="btn-print" onclick="printSingleOrder(' + item.id + ')">Imprimir</button></td>';
             tbody.appendChild(tr);
         }
     }
@@ -469,6 +469,7 @@
         document.getElementById("quoteTotalDisplay").textContent = "$" + total.toFixed(2);
     }
 
+    // FLUJO SANEADO: Guarda en disco de forma silenciosa sin abrir ventanas emergentes molestas
     function saveQuote() {
         var carId = document.getElementById("quoteSelectVehicle").value;
         var service = document.getElementById("quoteService").value.trim().toUpperCase();
@@ -488,7 +489,7 @@
             var currentQ = memoryQuotes.find(function(x) { return x.id === editingQuoteId; });
             rowData.image_evidence = currentQ ? currentQ.image_evidence : "";
             editingQuoteId = null; 
-            document.getElementById("btnSaveQuote").textContent = "Guardar y Enviar Presupuesto";
+            document.getElementById("btnSaveQuote").textContent = "Guardar Cotización en Disco";
         } else {
             rowData.id = Date.now();
             rowData.image_evidence = "";
@@ -498,12 +499,12 @@
             document.getElementById("quoteForm").reset(); 
             calculateQuoteTotal(); 
             loadAllData();
+            alert("💰 Cotización guardada localmente con éxito.");
         };
     }
 
     function triggerImageUpload(quoteId) { activeQuoteIdForUpload = quoteId; document.getElementById("hiddenFileInput").click(); }
     
-    // CORRECCIÓN DEL FILTRO INDEXADO: Lee de forma forzada la posición cero del archivo sin congelar la pantalla
     function handleFileSelected(input) {
         if (!input.files || input.files.length === 0) return;
         var reader = new FileReader();
@@ -525,9 +526,10 @@
             };
             img.src = e.target.result;
         };
-        reader.readAsDataURL(input.files[0]); // <--- Corrección Crítica del Arreglo Indexado
+        reader.readAsDataURL(input.files);
     }
 </script>
+
 <!-- BLOQUE 18 -->
 <script>
     function printSingleQuote(id) {
@@ -538,7 +540,6 @@
     function updateQuoteStatus(id, newStatus) { var q = memoryQuotes.find(function(x) { return x.id === id; }); if(q && db) { q.quote_status = newStatus; db.transaction(["cotizaciones"], "readwrite").objectStore("cotizaciones").put(q).onsuccess = function() { loadAllData(); }; } }
     function editQuote(id) { var q = memoryQuotes.find(function(x) { return x.id == id; }); if(!q) return; var car = memoryOrders.find(function(c) { return c.plates === q.plates; }); if(car) { document.getElementById("quoteSelectVehicle").value = car.id; autoFillQuoteData(); document.getElementById("quoteService").value = q.service; document.getElementById("costParts").value = q.parts || 0; document.getElementById("costLabor").value = q.labor || 0; calculateQuoteTotal(); editingQuoteId = q.id; document.getElementById("btnSaveQuote").textContent = "💾 Actualizar en Disco Local"; window.scrollTo({ top: 0, behavior: 'smooth' }); } else { alert("Vehículo inactivo."); } }
     
-    // CRUCE DE NÚMERO TELEFÓNICO INTELIGENTE: Jala el número de la bitácora activa del disco duro para evitar errores de envío
     function resendQuoteWhatsApp(id) { 
         var q = memoryQuotes.find(function(x) { return x.id == id; }); if(!q) return; 
         var matchedCar = memoryOrders.find(function(c) { return c.plates === q.plates; });
@@ -548,14 +549,8 @@
     }
     
     function deleteQuote(id) { if(confirm("¿Eliminar cotización física de la memoria?")) { if (db) { db.transaction(["cotizaciones"], "readwrite").objectStore("cotizaciones").delete(id).onsuccess = function() { loadAllData(); }; } } }
-    
-    // VISOR MODAL FIJO CERTIFICADO: Abre cualquier miniatura (Foto de auto o Evidencia de aceptación) a pantalla completa sin errores de renderizado
-    function openLargeImage(src) { 
-        var modal = document.getElementById("imageModal"); var modalImg = document.getElementById("modalImgSrc");
-        if(modal && modalImg && src) { modalImg.src = src; modal.style.display = "flex"; }
-    }
+    function openLargeImage(src) { var modal = document.getElementById("imageModal"); var modalImg = document.getElementById("modalImgSrc"); if(modal && modalImg && src) { modalImg.src = src; modal.style.display = "flex"; } }
 
-    // RENDERIZADO CON COMILLAS SANEADAS AL 100%
     function displayQuotes() {
         var tbody = document.getElementById("quotesTableBody"); if(!tbody) return; tbody.innerHTML = "";
         if(memoryQuotes.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:15px;">No hay cotizaciones registradas localmente.</td></tr>'; return; }
@@ -563,11 +558,10 @@
         for(var i = 0; i < memoryQuotes.length; i++) {
             var q = memoryQuotes[i]; var tr = document.createElement("tr");
             var selectStatusHtml = '<select class="table-select" onchange="updateQuoteStatus(' + q.id + ', this.value)"><option value="Pendiente"' + (q.quote_status === 'Pendiente' ? ' selected' : '') + '>🟡 Pendiente</option><option value="Aceptado"' + (q.quote_status === 'Aceptado' ? ' selected' : '') + '>🟢 Aceptado</option><option value="Rechazado"' + (q.quote_status === 'Rechazado' ? ' selected' : '') + '>⚪ Rechazado</option></select>';
-            
-            // Concatenación matemática perfecta de comillas para habilitar el clic en cualquier celular
             var evidenceHtml = q.image_evidence ? '<img src="' + q.image_evidence + '" class="img-preview" style="cursor:pointer;" onclick="openLargeImage(this.src)" title="Ver Evidencia Ampliada">' : (q.quote_status === 'Aceptado' ? '<button type="button" class="accept-btn" onclick="triggerImageUpload(' + q.id + ')">➕ Adjuntar Evidencia</button>' : '<span style="color:#64748b; font-size:12px;">Requiere ser Aceptado</span>');
             
-            tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + Number(q.subtotal).toFixed(2) + '</td><td>$' + Number(q.iva).toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + Number(q.total).toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Reenviar WhatsApp</button><button type="button" class="btn-print" onclick="printSingleQuote(' + q.id + ')">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
+            // CAMBIO DE NOMBRE DEL BOTÓN: Renombrado a "Enviar WhatsApp" para un flujo comercial limpio
+            tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + Number(q.subtotal).toFixed(2) + '</td><td>$' + Number(q.iva).toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + Number(q.total).toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Enviar WhatsApp</button><button type="button" class="btn-print" onclick="printSingleQuote(' + q.id + ')">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
             tbody.appendChild(tr);
         }
     }
@@ -576,5 +570,3 @@
     function exportToExcel() { if (memoryOrders.length === 0) { alert("No hay datos."); return; } var csv = "\uFEFFPlacas,Marca,Modelo,Año,Color,Kilometraje,VIN,Cliente,Telefono,Falla,Estado\n"; for (var i = 0; i < memoryOrders.length; i++) { var o = memoryOrders[i]; var cleanFault = o.fault.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + o.plates + '","' + o.brand + '","' + o.model + '","' + o.year + '","' + o.color + '","' + o.km + '","' + o.vin + '","' + o.owner + '","' + o.phone + '","' + cleanFault + '","' + o.status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Bitacora_Legado_LocalDB.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
     function exportQuotesToExcel() { if (memoryQuotes.length === 0) { alert("No hay cotizaciones para exportar."); return; } var csv = "\uFEFFPlacas,Cliente,Servicio,Subtotal,IVA_16,Total_Neto,Estatus\n"; for (var i = 0; i < memoryQuotes.length; i++) { var q = memoryQuotes[i]; var cleanService = q.service.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + q.plates + '","' + q.owner + '","' + cleanService + '","' + Number(q.subtotal).toFixed(2) + '","' + Number(q.iva).toFixed(2) + '","' + Number(q.total).toFixed(2) + '","' + q.quote_status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_LocalDB.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 </script>
-</body>
-</html>
