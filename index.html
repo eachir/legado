@@ -201,40 +201,59 @@
     
     var supabaseUrl = "";
     var supabaseKey = "";
-    var supabaseClient = null; // Instancia global saneada y corregida de Supabase
+    var supabaseClient = null; // Instancia global de Supabase corregida
 
     window.addEventListener('load', function() { 
         supabaseUrl = localStorage.getItem("legadoSupaUrl") || "";
         supabaseKey = localStorage.getItem("legadoSupaKey") || "";
         
+        // Limpia de raíz espacios residuales guardados en la memoria
+        supabaseUrl = supabaseUrl.trim();
+        supabaseKey = supabaseKey.trim();
+        
         document.getElementById("supabaseUrlInput").value = supabaseUrl;
         document.getElementById("supabaseKeyInput").value = supabaseKey;
         
-        // CORRECCIÓN DE MOTOR: Detecta y activa de forma segura la ventana global sin arrojar errores de tipo
+        // CORRECCIÓN CRÍTICA: Invoca de forma segura el objeto de ventana 'window.supabase'
         if (supabaseUrl && supabaseKey) {
             try {
-                supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-                document.getElementById("cloudPanelContainer").style.display = "none";
-                loadAllData();
-            } catch(e) { console.error("Error al arrancar Supabase:", e); }
+                if (window.supabase && typeof window.supabase.createClient === 'function') {
+                    supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    document.getElementById("cloudPanelContainer").style.display = "none"; // Oculta barra
+                    loadAllData();
+                } else {
+                    console.log("Esperando carga completa del bundle de Supabase...");
+                }
+            } catch(e) { console.error("Error al inicializar Supabase local:", e); }
         }
     });
 
+    // FUNCIÓN DE GUARDADO SANEADA: Elimina de forma automática espacios accidentales al pegar
     function saveSupabaseCreds() {
         supabaseUrl = document.getElementById("supabaseUrlInput").value.trim();
         supabaseKey = document.getElementById("supabaseKeyInput").value.trim();
+        
         localStorage.setItem("legadoSupaUrl", supabaseUrl);
         localStorage.setItem("legadoSupaKey", supabaseKey);
         
         if (supabaseUrl && supabaseKey) {
             try {
-                supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-                document.getElementById("cloudPanelContainer").style.display = "none";
-                loadAllData();
-            } catch(e) { alert("Llaves de Supabase incorrectas."); }
+                if (window.supabase && typeof window.supabase.createClient === 'function') {
+                    supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    document.getElementById("cloudPanelContainer").style.display = "none"; // Esconde panel verde con éxito
+                    loadAllData();
+                    alert("🌐 ¡Conexión con Supabase establecida y blindada con éxito!");
+                } else {
+                    alert("La librería de Supabase aún no termina de cargar. Intenta de nuevo en 3 segundos.");
+                }
+            } catch(e) { 
+                console.error("Error crítico de inicialización:", e);
+                alert("Hubo un problema al enlazar las credenciales. Revisa que no estén invertidas."); 
+            }
         }
     }
 </script>
+
 <!-- BLOQUE 10 -->
 <script>
     function showScreen(name) {
