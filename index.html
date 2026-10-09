@@ -566,13 +566,27 @@
     function exportToExcel() { var list = getLocalData("legado_v75_storage"); if (list.length === 0) { alert("No hay datos."); return; } var csv = "\uFEFFPlacas,Marca,Modelo,Año,Color,Kilometraje,VIN,Cliente,Telefono,Falla,Estado\n"; for (var i = 0; i < list.length; i++) { var o = list[i]; var cleanFault = o.fault.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + o.plates + '","' + o.brand + '","' + o.model + '","' + o.year + '","' + o.color + '","' + o.km + '","' + o.vin + '","' + o.owner + '","' + o.phone + '","' + cleanFault + '","' + o.status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Bitacora_Legado_Universal.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
     function exportQuotesToExcel() { var list = getLocalData("legado_v75_quotes"); if (list.length === 0) { alert("No hay cotizaciones para exportar."); return; } var csv = "\uFEFFPlacas,Cliente,Servicio,Subtotal,IVA_16,Total_Neto,Estatus\n"; for (var i = 0; i < list.length; i++) { var q = list[i]; var cleanService = q.service.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + q.plates + '","' + q.owner + '","' + cleanService + '","' + Number(q.subtotal).toFixed(2) + '","' + Number(q.iva).toFixed(2) + '","' + Number(q.total).toFixed(2) + '","' + q.quoteStatus + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_Universal.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 
-    // VISOR MODAL SANEADO PARA TODOS LOS BLOQUES: Abre de forma indestructible fotos de carros y capturas de aceptación
+    // VISOR DE IMÁGENES FIJO: Abre de forma indestructible fotos de carros y capturas de aceptación
     function openLargeImage(src) { 
-        var modal = document.getElementById("imageModal"); 
-        var modalImg = document.getElementById("modalImgSrc");
-        if(modal && modalImg && src) { 
-            modalImg.src = src; 
-            modal.style.display = "flex"; 
+        var modal = document.getElementById("imageModal"); var modalImg = document.getElementById("modalImgSrc");
+        if(modal && modalImg && src) { modalImg.src = src; modal.style.display = "flex"; }
+    }
+
+    // RENDERIZADO DE TABLA CORREGIDO: Estructura HTML limpia con comillas alineadas al 100%
+    function displayQuotes() {
+        var tbody = document.getElementById("quotesTableBody"); if(!tbody) return; tbody.innerHTML = "";
+        var quotes = getLocalData("legado_v75_quotes");
+        if(quotes.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:15px;">No hay cotizaciones activas en la nube.</td></tr>'; return; }
+        
+        for(var i = 0; i < quotes.length; i++) {
+            var q = quotes[i]; var tr = document.createElement("tr");
+            var selectStatusHtml = '<select class="table-select" onchange="updateQuoteStatus(' + q.id + ', this.value)"><option value="Pendiente"' + (q.quoteStatus === 'Pendiente' ? ' selected' : '') + '>🟡 Pendiente</option><option value="Aceptado"' + (q.quoteStatus === 'Aceptado' ? ' selected' : '') + '>🟢 Aceptado</option><option value="Rechazado"' + (q.quoteStatus === 'Rechazado' ? ' selected' : '') + '>⚪ Rechazado</option></select>';
+            
+            // Corrección de comillas y concatenación indestructible para el clic de evidencias en celulares
+            var evidenceHtml = q.imageEvidence ? '<img src="' + q.imageEvidence + '" class="img-preview" style="cursor:pointer;" onclick="openLargeImage(this.src)" title="Ver Evidencia Ampliada">' : (q.quoteStatus === 'Aceptado' ? '<button type="button" class="accept-btn" onclick="triggerImageUpload(' + q.id + ')">➕ Adjuntar Evidencia</button>' : '<span style="color:#64748b; font-size:12px;">Requiere ser Aceptado</span>');
+            
+            tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + Number(q.subtotal).toFixed(2) + '</td><td>$' + Number(q.iva).toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + Number(q.total).toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Reenviar WhatsApp</button><button type="button" class="btn-print" onclick="printSingleQuote(' + q.id + ')">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
+            tbody.appendChild(tr);
         }
     }
 </script>
