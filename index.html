@@ -214,48 +214,53 @@
         }
     });
 
-    // REPARADOR MAESTRO: Convierte un objeto de consola JavaScript en un JSON estricto y limpio
+    // REPARADOR ABSOLUTO: Destruye saltos de línea, espacios invisibles y caracteres de control
     function saveFirebaseConfig() {
         var rawText = document.getElementById("firebaseConfigInput").value.trim();
         if (!rawText) { alert("El recuadro está vacío."); return; }
 
         try {
-            // 1. Extrae estrictamente lo que esté dentro de las llaves { }
+            // 1. Extrae estrictamente el contenido entre las llaves primarias { }
             var start = rawText.indexOf("{");
             var end = rawText.lastIndexOf("}");
-            if (start === -1 || end === -1) { alert("Asegúrate de incluir las llaves { y } en el texto."); return; }
+            if (start === -1 || end === -1) { alert("Faltan las llaves { } en el texto."); return; }
             var objText = rawText.substring(start, end + 1);
 
-            // 2. Limpia comillas raras de celulares o pantallas
-            objText = objText.replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"').replace(/'/g, '"');
+            // 2. PURIFICADOR AGRESIVO: Remueve saltos de línea, tabulaciones y caracteres invisibles ocultos
+            var flatText = objText
+                .replace(/[\r\n\t]/g, ' ') // Cambia Enter y Tabulaciones por espacios normales
+                .replace(/[\u200B-\u200D\uFEFF]/g, '') // Elimina caracteres invisibles de ancho cero
+                .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"') // Sanea comillas curvas
+                .replace(/'/g, '"'); // Sanea comillas simples
 
-            // 3. TRUCO DE INGENIERÍA: Le pone comillas dobles automáticas a las palabras clave de Firebase
-            var fixedJson = objText
-                .replace(/(\s*?)([a-zA-Z0-9_]+)(\s*?):/g, '$1"$2"$3:') // Agrega comillas a las claves sin comillas
-                .replace(/,\s*}/g, '}') // Elimina comas que queden sobrando al final del measurementId
-                .replace(/;\s*$/g, ''); // Limpia puntos y comas residuales
+            // 3. Agrega comillas dobles automáticas a las palabras clave que no las tengan
+            var formattedText = flatText
+                .replace(/(\s*?)([a-zA-Z0-9_]+)(\s*?):/g, '$1"$2"$3:')
+                .replace(/,\s*}/g, '}') // Quita comas huérfanas al final
+                .replace(/;\s*$/g, ''); // Quita puntos y comas residuales
 
-            var config = JSON.parse(fixedJson);
+            // 4. Intenta procesar el JSON ultra-limpio
+            var config = JSON.parse(formattedText);
             
-            // 4. Si Google omitió la URL de la base de datos en tiempo real, la app la auto-construye
+            // 5. Construye la URL de la base de datos si Google la omitió de la pantalla
             if (!config.databaseURL && config.projectId) {
                 config.databaseURL = "https://" + config.projectId + "://firebaseio.com";
             }
 
-            // Guarda la configuración purificada y arranca el ecosistema de Google
+            // Guarda y arranca el ecosistema en la nube de Google
             localStorage.setItem("legadoFirebaseConfig", JSON.stringify(config));
             
             firebase.initializeApp(config);
             database = firebase.database();
             
-            // Cierre físico automático del panel naranja
+            // Ocultamiento físico inmediato de la barra naranja
             document.getElementById("cloudPanelContainer").style.display = "none";
             initRealtimeListeners();
             
             alert("🔥 ¡Conexión con Firebase establecida e indexada con éxito!");
         } catch(e) { 
             console.error(e);
-            alert("Error al procesar el formato. Copia todo el bloque de Firebase desde la consola e intenta de nuevo."); 
+            alert("Sigue habiendo un carácter oculto que traba la lectura. Por favor limpia el texto en un bloc de notas e ingresa solo las líneas de datos."); 
         }
     }
 </script>
