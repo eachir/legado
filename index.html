@@ -341,7 +341,7 @@
             var currentCar = memoryOrders.find(function(x) { return x.id === editingOrderId; });
             rowData.carPhotos = (tempCarPhotos.length > 0) ? tempCarPhotos : (currentCar ? currentCar.carPhotos : []);
             editingOrderId = null; 
-            document.getElementById("btnSaveOrder").textContent = "Guardar en Base Local Indestructible";
+            document.getElementById("btnSaveOrder").textContent = "Guardar";
         } else {
             rowData.id = Date.now();
             rowData.carPhotos = tempCarPhotos;
