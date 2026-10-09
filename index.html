@@ -106,7 +106,6 @@
         <h2>Registrar Nueva Orden de Servicio</h2>
         <form id="orderForm">
             <div class="form-grid">
-                <div class="form-grid">
                 <div class="form-group"><label>Placas:</label><input type="text" id="plates" placeholder="Ej. ABC-1234" oninput="this.value = this.value.toUpperCase()" onblur="searchExistingVehicle()"></div>
                 <div class="form-group"><label>Marca:</label><input type="text" id="brand" placeholder="Ej. Toyota" oninput="this.value = this.value.toUpperCase()"></div>
                 <div class="form-group"><label>Modelo:</label><input type="text" id="model" placeholder="Ej. Corolla" oninput="this.value = this.value.toUpperCase()"></div>
@@ -128,6 +127,7 @@
             </div>
             <button type="button" class="btn-primary" id="btnSaveOrder" onclick="saveOrder()">Guardar en Base Local Indestructible</button>
         </form>
+
 <!-- BLOQUE 6 -->
         <h2>Bitácora de Monitoreo</h2>
         <div class="tabs-container">
