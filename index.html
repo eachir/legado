@@ -197,7 +197,7 @@
     var memoryOrders = [];
     var memoryQuotes = [];
     var firebaseConfigString = "";
-    var database = null; // Instancia de Realtime Database de Google
+    var database = null;
 
     window.addEventListener('load', function() { 
         firebaseConfigString = localStorage.getItem("legadoFirebaseConfig") || "";
@@ -208,30 +208,51 @@
                 var config = JSON.parse(firebaseConfigString);
                 firebase.initializeApp(config);
                 database = firebase.database();
-                document.getElementById("cloudPanelContainer").style.display = "none"; // Se esconde al validar con éxito
+                document.getElementById("cloudPanelContainer").style.display = "none";
                 initRealtimeListeners();
             } catch(e) { console.error("Error al arrancar Firebase:", e); }
         }
     });
 
+    // FUNCIÓN DE GUARDADO MAESTRA: Limpia comillas raras de Google y fuerza el ocultamiento
     function saveFirebaseConfig() {
         var rawText = document.getElementById("firebaseConfigInput").value.trim();
-        localStorage.setItem("legadoFirebaseConfig", rawText);
         
-        if (rawText) {
-            try {
-                var config = JSON.parse(rawText);
-                firebase.initializeApp(config);
-                database = firebase.database();
-                document.getElementById("cloudPanelContainer").style.display = "none";
-                initRealtimeListeners();
-                alert("🔥 ¡Conexión con Firebase establecida con éxito!");
-            } catch(e) { 
-                alert("El texto ingresado no es un JSON válido. Asegúrate de copiar el objeto completo con sus llaves { }."); 
+        if (!rawText) { alert("El recuadro está vacío."); return; }
+
+        try {
+            // TRUCO DE LIMPIEZA CONTABLE: Reemplaza comillas curvas de celular/consola por comillas rectas válidas
+            var cleanJson = rawText
+                .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"') 
+                .replace(/'/g, '"'); 
+            
+            // Intenta extraer solo lo que esté dentro de las llaves si se copiaron textos extra
+            var startBrace = cleanJson.indexOf('{');
+            var endBrace = cleanJson.lastIndexOf('}');
+            if (startBrace !== -1 && endBrace !== -1) {
+                cleanJson = cleanJson.substring(startBrace, endBrace + 1);
             }
+
+            var config = JSON.parse(cleanJson);
+            
+            // Guarda la versión perfectamente limpia de errores
+            localStorage.setItem("legadoFirebaseConfig", JSON.stringify(config));
+            
+            firebase.initializeApp(config);
+            database = firebase.database();
+            
+            // Oculta la barra naranja de forma física inmediata
+            document.getElementById("cloudPanelContainer").style.display = "none";
+            initRealtimeListeners();
+            
+            alert("🔥 ¡Conexión con Firebase establecida con éxito!");
+        } catch(e) { 
+            console.error(e);
+            alert("Sigue habiendo un detalle en el formato del texto. Asegúrate de copiar desde la llave { hasta la llave } e intenta de nuevo."); 
         }
     }
 </script>
+
 <!-- BLOQUE 10 -->
 <script>
     function showScreen(name) {
