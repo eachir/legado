@@ -469,7 +469,6 @@
         document.getElementById("quoteTotalDisplay").textContent = "$" + total.toFixed(2);
     }
 
-    // FLUJO SANEADO: Guarda en disco de forma silenciosa sin abrir ventanas emergentes molestas
     function saveQuote() {
         var carId = document.getElementById("quoteSelectVehicle").value;
         var service = document.getElementById("quoteService").value.trim().toUpperCase();
@@ -480,6 +479,7 @@
         var subtotal = parts + labor; var iva = subtotal * 0.16; var total = subtotal + iva;
 
         if (!db) return;
+        // Unificación de la propiedad a imageEvidence
         var rowData = { plates: car.plates, owner: car.owner, phone: car.phone, vehicle: car.brand + " " + car.model, service: service, parts: parts, labor: labor, subtotal: subtotal, iva: iva, total: total, quote_status: "Pendiente" };
         var transaction = db.transaction(["cotizaciones"], "readwrite");
         var objectStore = transaction.objectStore("cotizaciones");
@@ -487,12 +487,12 @@
         if (editingQuoteId !== null) {
             rowData.id = editingQuoteId;
             var currentQ = memoryQuotes.find(function(x) { return x.id === editingQuoteId; });
-            rowData.image_evidence = currentQ ? currentQ.image_evidence : "";
+            rowData.imageEvidence = currentQ ? currentQ.imageEvidence : "";
             editingQuoteId = null; 
             document.getElementById("btnSaveQuote").textContent = "Guardar Cotización en Disco";
         } else {
             rowData.id = Date.now();
-            rowData.image_evidence = "";
+            rowData.imageEvidence = "";
         }
 
         objectStore.put(rowData).onsuccess = function() {
@@ -505,6 +505,7 @@
 
     function triggerImageUpload(quoteId) { activeQuoteIdForUpload = quoteId; document.getElementById("hiddenFileInput").click(); }
     
+    // SANEADO: Guarda la imagen en la misma propiedad unificada de IndexedDB sin romper la lectura
     function handleFileSelected(input) {
         if (!input.files || input.files.length === 0) return;
         var reader = new FileReader();
@@ -520,38 +521,34 @@
                 
                 var q = memoryQuotes.find(function(x) { return x.id === activeQuoteIdForUpload; });
                 if (q && db) {
-                    q.image_evidence = compressedBase64;
+                    q.imageEvidence = compressedBase64; // Guardado homologado en CamelCase
                     db.transaction(["cotizaciones"], "readwrite").objectStore("cotizaciones").put(q).onsuccess = function() { loadAllData(); };
                 }
             };
             img.src = e.target.result;
         };
-        reader.readAsDataURL(input.files);
+        reader.readAsDataURL(input.files[0]);
     }
 </script>
+
 <!-- BLOQUE 18 -->
 <script>
-    // IMPRESIÓN COMPLETA SANEADA: Incluye de forma automática la foto de la evidencia en la hoja membretada
+    // IMPRESIÓN CORREGIDA: Jala el campo exacto del disco e inyecta la foto de la autorización en el papel
     function printSingleQuote(id) {
         var q = memoryQuotes.find(function(x) { return x.id == id; }); if (!q) return;
         
         var w = window.open('', '_blank'); 
         w.document.write('<html><head><title>Presupuesto Taller</title><style>body{font-family:sans-serif;padding:25px;color:#000;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:20px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;} .box{border:1px solid #000;padding:12px;border-radius:6px;margin-bottom:15px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:13px;} .total-box{text-align:right;font-size:15px;line-height:1.6;margin-bottom:20px;} .evidence-print-box{text-align:center;margin-top:20px;border-top:1px dashed #000;padding-top:15px;} .evidence-print-box img{max-width:320px;max-height:240px;object-fit:contain;border:1px solid #000;border-radius:6px;}</style></head><body>');
         
-        // Encabezado Contable
         w.document.write('<div class="header"><h1>💰 CO-TIZACIÓN DE SERVICIO</h1><p>Presupuesto Técnico Financiero LocalDB</p></div><div class="grid">');
         w.document.write('<div><div class="title">Cliente:</div><b>Nombre:</b> ' + q.owner + '</div>');
         w.document.write('<div><div class="title">Vehículo:</div><b>Placas:</b> ' + q.plates + '<br><b>Unidad:</b> ' + q.vehicle + '</div></div>');
-        
-        // Desglose del Servicio
         w.document.write('<div class="box"><div class="title">Trabajo Autorizado:</div><p style="margin:0; white-space:pre-wrap;">' + q.service + '</p></div>');
-        
-        // Bloque Económico Financiero
         w.document.write('<div class="total-box"><b>Subtotal:</b> $' + Number(q.subtotal).toFixed(2) + '<br><b>IVA (16%):</b> $' + Number(q.iva).toFixed(2) + '<br><span style="font-size:18px;color:#000;"><b>TOTAL NETO:</b> $' + Number(q.total).toFixed(2) + '</span></div>');
         
-        // INYECTOR DE EVIDENCIA: Si existe la captura en el disco, la estampa de forma física en el papel
-        if (q.image_evidence) {
-            w.document.write('<div class="evidence-print-box"><div class="title" style="margin-bottom:8px;">Evidencia Oficial de Aceptación:</div><img src="' + q.image_evidence + '"></div>');
+        // Verifica y dibuja físicamente la evidencia en la hoja membretada
+        if (q.imageEvidence) {
+            w.document.write('<div class="evidence-print-box"><div class="title" style="margin-bottom:8px;">Evidencia Oficial de Aceptación:</div><img src="' + q.imageEvidence + '"></div>');
         }
         
         w.document.write('</body></html>');
@@ -569,6 +566,7 @@
     function exportToExcel() { if (memoryOrders.length === 0) { alert("No hay datos."); return; } var csv = "\uFEFFPlacas,Marca,Modelo,Año,Color,Kilometraje,VIN,Cliente,Telefono,Falla,Estado\n"; for (var i = 0; i < memoryOrders.length; i++) { var o = memoryOrders[i]; var cleanFault = o.fault.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + o.plates + '","' + o.brand + '","' + o.model + '","' + o.year + '","' + o.color + '","' + o.km + '","' + o.vin + '","' + o.owner + '","' + o.phone + '","' + cleanFault + '","' + o.status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Bitacora_Legado_LocalDB.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
     function exportQuotesToExcel() { if (memoryQuotes.length === 0) { alert("No hay cotizaciones para exportar."); return; } var csv = "\uFEFFPlacas,Cliente,Servicio,Subtotal,IVA_16,Total_Neto,Estatus\n"; for (var i = 0; i < memoryQuotes.length; i++) { var q = memoryQuotes[i]; var cleanService = q.service.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + q.plates + '","' + q.owner + '","' + cleanService + '","' + Number(q.subtotal).toFixed(2) + '","' + Number(q.iva).toFixed(2) + '","' + Number(q.total).toFixed(2) + '","' + q.quote_status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_LocalDB.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 
+    // RENDERIZADO DE TABLA CORREGIDO: Mapea la propiedad exacta imageEvidence compartida por el motor IndexedDB
     function displayQuotes() {
         var tbody = document.getElementById("quotesTableBody"); if(!tbody) return; tbody.innerHTML = "";
         if(memoryQuotes.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:15px;">No hay cotizaciones registradas localmente.</td></tr>'; return; }
@@ -576,7 +574,9 @@
         for(var i = 0; i < memoryQuotes.length; i++) {
             var q = memoryQuotes[i]; var tr = document.createElement("tr");
             var selectStatusHtml = '<select class="table-select" onchange="updateQuoteStatus(' + q.id + ', this.value)"><option value="Pendiente"' + (q.quote_status === 'Pendiente' ? ' selected' : '') + '>🟡 Pendiente</option><option value="Aceptado"' + (q.quote_status === 'Aceptado' ? ' selected' : '') + '>🟢 Aceptado</option><option value="Rechazado"' + (q.quote_status === 'Rechazado' ? ' selected' : '') + '>⚪ Rechazado</option></select>';
-            var evidenceHtml = q.image_evidence ? '<img src="' + q.image_evidence + '" class="img-preview" style="cursor:pointer;" onclick="openLargeImage(this.src)" title="Ver Evidencia Ampliada">' : (q.quote_status === 'Aceptado' ? '<button type="button" class="accept-btn" onclick="triggerImageUpload(' + q.id + ')">➕ Adjuntar Evidencia</button>' : '<span style="color:#64748b; font-size:12px;">Requiere ser Aceptado</span>');
+            
+            // Corrección de propiedad a q.imageEvidence para que lea la foto real guardada en el disco
+            var evidenceHtml = q.imageEvidence ? '<img src="' + q.imageEvidence + '" class="img-preview" style="cursor:pointer;" onclick="openLargeImage(this.src)" title="Ver Evidencia Ampliada">' : (q.quote_status === 'Aceptado' ? '<button type="button" class="accept-btn" onclick="triggerImageUpload(' + q.id + ')">➕ Adjuntar Evidencia</button>' : '<span style="color:#64748b; font-size:12px;">Requiere ser Aceptado</span>');
             
             tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + Number(q.subtotal).toFixed(2) + '</td><td>$' + Number(q.iva).toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + Number(q.total).toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Enviar WhatsApp</button><button type="button" class="btn-print" onclick="printSingleQuote(' + q.id + ')">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
             tbody.appendChild(tr);
