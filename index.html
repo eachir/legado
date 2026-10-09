@@ -554,35 +554,40 @@
 
 <!-- BLOQUE 18 -->
 <script>
-    function displayQuotes() {
-        var tbody = document.getElementById("quotesTableBody"); if(!tbody) return; tbody.innerHTML = "";
-        var quotes = getLocalData("legadoQuotesFinalV65");
-        if(quotes.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:15px;">No hay cotizaciones.</td></tr>'; return; }
-        for(var i = 0; i < quotes.length; i++) {
-            var q = quotes[i]; var tr = document.createElement("tr");
-            var selectStatusHtml = '<select class="table-select" onchange="updateQuoteStatus(' + q.id + ', this.value)"><option value="Pendiente"' + (q.quoteStatus === 'Pendiente' ? ' selected' : '') + '>🟡 Pendiente</option><option value="Aceptado"' + (q.quoteStatus === 'Aceptado' ? ' selected' : '') + '>🟢 Aceptado</option><option value="Rechazado"' + (q.quoteStatus === 'Rechazado' ? ' selected' : '') + '>⚪ Rechazado</option></select>';
-            var evidenceHtml = q.imageEvidence ? '<img src="' + q.imageEvidence + '" class="img-preview" style="cursor:pointer;" onclick="openLargeImage(this.src)" title="Ver Evidencia Ampliada">' : (q.quoteStatus === 'Aceptado' ? '<button type="button" class="accept-btn" onclick="triggerImageUpload(' + q.id + ')">➕ Adjuntar Evidencia</button>' : '<span style="color:#64748b; font-size:12px;">Requiere ser Aceptado</span>');
-            tr.innerHTML = '<td><b>' + q.plates + '</b></td><td>' + q.owner + '</td><td>' + q.service + '</td><td>$' + Number(q.subtotal).toFixed(2) + '</td><td>$' + Number(q.iva).toFixed(2) + '</td><td style="color:#10b981; font-weight:bold;">$' + Number(q.total).toFixed(2) + '</td><td>' + selectStatusHtml + '</td><td style="text-align:center;">' + evidenceHtml + '</td><td class="actions-cell"><button type="button" class="whats-resend-btn" onclick="resendQuoteWhatsApp(' + q.id + ')">Reenviar WhatsApp</button><button type="button" class="btn-print" onclick="printSingleQuote(' + q.id + ')">Imprimir</button><button type="button" class="deliver-btn" style="background-color:#0284c7;" onclick="editQuote(' + q.id + ')">✏️ Editar</button><button type="button" class="deliver-btn" style="background:#ef4444;" onclick="deleteQuote(' + q.id + ')">Eliminar</button></td>';
-            tbody.appendChild(tr);
-        }
-    }
-
     function printSingleQuote(id) {
         var quotes = getLocalData("legadoQuotesFinalV65"); var q = quotes.find(function(x) { return x.id == id; }); if (!q) return;
         var w = window.open('', '_blank'); w.document.write('<html><head><title>Presupuesto</title><style>body{font-family:sans-serif;padding:25px;} .header{text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:20px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;} .box{border:1px solid #000;padding:12px;border-radius:6px;margin-bottom:15px;} .title{font-weight:bold;text-transform:uppercase;color:#333;margin-bottom:5px;font-size:13px;} .total-box{text-align:right;font-size:15px;line-height:1.6;}</style></head><body><div class="header"><h1>💰 CO-TIZACIÓN DE SERVICIO</h1><p>Presupuesto Técnico Financiero Realtime</p></div><div class="grid"><div><div class="title">Cliente:</div><b>Nombre:</b> ' + q.owner + '</div><div><div class="title">Vehículo:</div><b>Placas:</b> ' + q.plates + '<br><b>Unidad:</b> ' + q.vehicle + '</div></div><div class="box"><div class="title">Trabajo:</div><p style="margin:0; white-space:pre-wrap;">' + q.service + '</p></div><div class="total-box"><b>Subtotal:</b> $' + Number(q.subtotal).toFixed(2) + '<br><b>IVA (16%):</b> $' + Number(q.iva).toFixed(2) + '<br><span style="font-size:18px;color:#10b981;"><b>TOTAL NETO:</b> $' + Number(q.total).toFixed(2) + '</span></div></body></html>'); w.document.close(); w.focus(); setTimeout(function(){ w.print(); w.close(); }, 500);
     }
 
-    // VISOR MODAL DE INTERFAZ UNIFICADO: Abre la imagen a pantalla completa al dar clic en la miniatura
-    function openLargeImage(src) { 
-        document.getElementById("modalImgSrc").src = src; 
-        document.getElementById("imageModal").style.display = "flex"; 
-    }
-
     function updateQuoteStatus(id, newStatus) { var quotes = getLocalData("legadoQuotesFinalV65"); for(var i = 0; i < quotes.length; i++) { if(quotes[i].id === id) { quotes[i].quoteStatus = newStatus; break; } } localStorage.setItem("legadoQuotesFinalV65", JSON.stringify(quotes)); displayQuotes(); syncToCloud(); }
+    
     function editQuote(id) { var quotes = getLocalData("legadoQuotesFinalV65"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return; var car = getLocalData("legadoStorageFinalV65").find(function(c) { return c.plates === q.plates; }); if(car) { document.getElementById("quoteSelectVehicle").value = car.id; autoFillQuoteData(); document.getElementById("quoteService").value = q.service; document.getElementById("costParts").value = q.parts || 0; document.getElementById("costLabor").value = q.labor || 0; calculateQuoteTotal(); editingQuoteId = q.id; document.getElementById("btnSaveQuote").textContent = "💾 Actualizar en Bitácora"; window.scrollTo({ top: 0, behavior: 'smooth' }); } else { alert("Vehículo inactivo."); } }
+    
+    // CORRECCIÓN WHATSAPP: Busca las placas en la bitácora activa para extraer el teléfono real y evitar números vacíos
+    function resendQuoteWhatsApp(id) { 
+        var quotes = getLocalData("legadoQuotesFinalV65"); var q = quotes.find(function(x) { return x.id == id; }); if(!q) return; 
+        var carList = getLocalData("legadoStorageFinalV65"); var matchedCar = carList.find(function(c) { return c.plates === q.plates; });
+        var targetPhone = matchedCar ? matchedCar.phone : q.phone;
+        if(!targetPhone) { alert("No se localizó el teléfono del cliente en la bitácora activa."); return; }
+        window.open("https://wa.me" + targetPhone + "?text=" + encodeURIComponent("Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + Number(q.subtotal).toFixed(2) + "\n🧾 *IVA (16%):* $" + Number(q.iva).toFixed(2) + "\n💰 *TOTAL NETO:* $" + Number(q.total).toFixed(2)), '_blank'); 
+    }
+    
+    // VISOR DE IMÁGENES INTEGRADO: Abre cualquier miniatura (Foto de auto o Evidencia de aceptación) a pantalla completa
+    function openLargeImage(src) { 
+        var modal = document.getElementById("imageModal");
+        var modalImg = document.getElementById("modalImgSrc");
+        if(modal && modalImg) {
+            modalImg.src = src; 
+            modal.style.display = "flex"; 
+        }
+    }
+    
     function deleteQuote(id) { if(confirm("¿Eliminar cotización?")) { var filtered = getLocalData("legadoQuotesFinalV65").filter(function(q) { return q.id !== id; }); localStorage.setItem("legadoQuotesFinalV65", JSON.stringify(filtered)); displayQuotes(); syncToCloud(); } }
+    function getLocalData(key) { try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : []; } catch(e) { return []; } }
+    function filterOrders() { var q = document.getElementById("searchInput").value.toLowerCase(); var rows = document.querySelectorAll("#ordersTableBody tr"); rows.forEach(function(r) { if(r.cells.length < 2) return; if(r.textContent.toLowerCase().indexOf(q) > -1) { r.style.display = ""; } else { r.style.display = "none"; } }); }
     function exportToExcel() { var list = getLocalData("legadoStorageFinalV65"); if (list.length === 0) { alert("No hay datos."); return; } var csv = "\uFEFFPlacas,Marca,Modelo,Año,Color,Kilometraje,VIN,Cliente,Telefono,Falla,Estado\n"; for (var i = 0; i < list.length; i++) { var o = list[i]; var cleanFault = o.fault.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + o.plates + '","' + o.brand + '","' + o.model + '","' + o.year + '","' + o.color + '","' + o.km + '","' + o.vin + '","' + o.owner + '","' + o.phone + '","' + cleanFault + '","' + o.status + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Bitacora_Legado_Universal.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
     function exportQuotesToExcel() { var list = getLocalData("legadoQuotesFinalV65"); if (list.length === 0) { alert("No hay cotizaciones para exportar."); return; } var csv = "\uFEFFPlacas,Cliente,Servicio,Subtotal,IVA_16,Total_Neto,Estatus\n"; for (var i = 0; i < list.length; i++) { var q = list[i]; var cleanService = q.service.replace(/\n/g, " ").replace(/"/g, '""'); csv += '"' + q.plates + '","' + q.owner + '","' + cleanService + '","' + Number(q.subtotal).toFixed(2) + '","' + Number(q.iva).toFixed(2) + '","' + Number(q.total).toFixed(2) + '","' + q.quoteStatus + '"\n'; } var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); var url = URL.createObjectURL(blob); var link = document.createElement("a"); link.href = url; link.download = "Reporte_Cotizaciones_Universal.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 </script>
 </body>
 </html>
+
