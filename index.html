@@ -569,7 +569,7 @@
         var carList = getLocalData("legadoStorageFinalV65"); var matchedCar = carList.find(function(c) { return c.plates === q.plates; });
         var targetPhone = matchedCar ? matchedCar.phone : q.phone;
         if(!targetPhone) { alert("No se localizó el teléfono del cliente en la bitácora activa."); return; }
-        window.open("https://wa.me" + targetPhone + "?text=" + encodeURIComponent("Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + Number(q.subtotal).toFixed(2) + "\n🧾 *IVA (16%):* $" + Number(q.iva).toFixed(2) + "\n💰 *TOTAL NETO:* $" + Number(q.total).toFixed(2)), '_blank'); 
+        window.open("https://wa.me/" + targetPhone + "?text=" + encodeURIComponent("Hola " + q.owner + ", presupuesto de Taller Legado para *" + q.vehicle + " [" + q.plates + "]*:\n\n🛠️ *Trabajo:* " + q.service + "\n\n💵 *Subtotal:* $" + Number(q.subtotal).toFixed(2) + "\n🧾 *IVA (16%):* $" + Number(q.iva).toFixed(2) + "\n💰 *TOTAL NETO:* $" + Number(q.total).toFixed(2)), '_blank'); 
     }
     
     // VISOR DE IMÁGENES INTEGRADO: Abre cualquier miniatura (Foto de auto o Evidencia de aceptación) a pantalla completa
