@@ -214,44 +214,53 @@
         }
     });
 
-    // FUNCIÓN DE GUARDADO MAESTRA: Limpia comillas raras de Google y fuerza el ocultamiento
+    // MOTOR INTELIGENTE: Limpia, extrae y auto-construye parámetros faltantes de Google
     function saveFirebaseConfig() {
         var rawText = document.getElementById("firebaseConfigInput").value.trim();
-        
         if (!rawText) { alert("El recuadro está vacío."); return; }
 
         try {
-            // TRUCO DE LIMPIEZA CONTABLE: Reemplaza comillas curvas de celular/consola por comillas rectas válidas
+            // 1. Limpieza total de comillas extrañas de celulares o pantallas
             var cleanJson = rawText
                 .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"') 
-                .replace(/'/g, '"'); 
-            
-            // Intenta extraer solo lo que esté dentro de las llaves si se copiaron textos extra
-            var startBrace = cleanJson.indexOf('{');
-            var endBrace = cleanJson.lastIndexOf('}');
-            if (startBrace !== -1 && endBrace !== -1) {
-                cleanJson = cleanJson.substring(startBrace, endBrace + 1);
+                .replace(/'/g, '"')
+                .replace(/^[^{]*/, '') // Borra todo lo que esté antes de la primera llave
+                .replace(/[^}]*$/, ''); // Borra todo lo que esté después de la última llave
+
+            // Si se colaron palabras como "const firebaseConfig =", las limpia quirúrgicamente
+            if (!cleanJson.startsWith("{")) {
+                var start = rawText.indexOf("{");
+                var end = rawText.lastIndexOf("}");
+                if (start !== -1 && end !== -1) {
+                    cleanJson = rawText.substring(start, end + 1);
+                }
             }
 
             var config = JSON.parse(cleanJson);
             
-            // Guarda la versión perfectamente limpia de errores
+            // 2. CORRECCIÓN MAESTRA: Si Google no te dio la databaseURL, la app la construye solita
+            if (!config.databaseURL && config.projectId) {
+                config.databaseURL = "https://" + config.projectId + "://firebaseio.com";
+            }
+
+            // Guarda y arranca el ecosistema de Google
             localStorage.setItem("legadoFirebaseConfig", JSON.stringify(config));
             
             firebase.initializeApp(config);
             database = firebase.database();
             
-            // Oculta la barra naranja de forma física inmediata
+            // Cierre físico del panel naranja
             document.getElementById("cloudPanelContainer").style.display = "none";
             initRealtimeListeners();
             
-            alert("🔥 ¡Conexión con Firebase establecida con éxito!");
+            alert("🔥 ¡Conexión con Firebase establecida e indexada con éxito!");
         } catch(e) { 
             console.error(e);
-            alert("Sigue habiendo un detalle en el formato del texto. Asegúrate de copiar desde la llave { hasta la llave } e intenta de nuevo."); 
+            alert("Error de lectura. Asegúrate de copiar desde la llave { hasta la llave } sin textos extras."); 
         }
     }
 </script>
+
 
 <!-- BLOQUE 10 -->
 <script>
